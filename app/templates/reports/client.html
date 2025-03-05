@@ -1,0 +1,267 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="h3 mb-0 text-gray-800">Raport klienta</h1>
+        <p class="text-muted">{{ client.name }}{% if client.company_name %} - {{ client.company_name }}{% endif %}</p>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <div class="btn-group">
+            <a href="{{ url_for('reports.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Powrót do raportów
+            </a>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-file-export me-1"></i>Eksportuj
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('reports.export_client', client_id=client.id, format='csv') }}">
+                            <i class="fas fa-file-csv me-2"></i>CSV
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('reports.export_client', client_id=client.id, format='excel') }}">
+                            <i class="fas fa-file-excel me-2"></i>Excel
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formularz wyboru klienta -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Wybierz klienta</h6>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('reports.client') }}" method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="client_id" class="form-label">Klient</label>
+                <select class="form-select" id="client_id" name="client_id">
+                    {% for c in clients %}
+                    <option value="{{ c.id }}" {% if c.id == client.id %}selected{% endif %}>
+                        {{ c.name }}{% if c.company_name %} ({{ c.company_name }}){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter me-1"></i>Filtruj
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Informacje o kliencie -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Informacje o kliencie</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-4">Nazwa:</dt>
+                    <dd class="col-sm-8">{{ client.name }}</dd>
+                    
+                    {% if client.company_name %}
+                    <dt class="col-sm-4">Firma:</dt>
+                    <dd class="col-sm-8">{{ client.company_name }}</dd>
+                    {% endif %}
+                    
+                    {% if client.tax_id %}
+                    <dt class="col-sm-4">NIP:</dt>
+                    <dd class="col-sm-8">{{ client.tax_id }}</dd>
+                    {% endif %}
+                    
+                    {% if client.email %}
+                    <dt class="col-sm-4">Email:</dt>
+                    <dd class="col-sm-8">{{ client.email }}</dd>
+                    {% endif %}
+                    
+                    {% if client.phone %}
+                    <dt class="col-sm-4">Telefon:</dt>
+                    <dd class="col-sm-8">{{ client.phone }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <h5 class="mb-3">Podsumowanie płatności</h5>
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1">Zapłacone:</p>
+                                <h3 class="text-success">{{ "%.2f"|format(total_paid) }} zł</h3>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1">Oczekujące:</p>
+                                <h3 class="text-warning">{{ "%.2f"|format(total_pending) }} zł</h3>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <p class="mb-1">Przeterminowane:</p>
+                                <h3 class="text-danger">{{ "%.2f"|format(total_overdue) }} zł</h3>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1">Łącznie:</p>
+                                <h3>{{ "%.2f"|format(total_paid + total_pending + total_overdue) }} zł</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista faktur -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Faktury klienta</h6>
+    </div>
+    <div class="card-body">
+        {% if invoices %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Numer faktury</th>
+                        <th>Data wystawienia</th>
+                        <th>Termin płatności</th>
+                        <th>Status</th>
+                        <th class="text-end">Kwota</th>
+                        <th>Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in invoices %}
+                    <tr>
+                        <td>{{ invoice.invoice_number }}</td>
+                        <td>{{ invoice.issue_date.strftime('%d.%m.%Y') }}</td>
+                        <td>{{ invoice.due_date.strftime('%d.%m.%Y') }}</td>
+                        <td>
+                            {% if invoice.status == 'paid' %}
+                            <span class="badge bg-success">Opłacona</span>
+                            {% elif invoice.status == 'pending' %}
+                            <span class="badge bg-warning">Oczekująca</span>
+                            {% elif invoice.status == 'overdue' %}
+                            <span class="badge bg-danger">Przeterminowana</span>
+                            {% elif invoice.status == 'draft' %}
+                            <span class="badge bg-secondary">Szkic</span>
+                            {% elif invoice.status == 'canceled' %}
+                            <span class="badge bg-dark">Anulowana</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">{{ "%.2f"|format(invoice.total) }} zł</td>
+                        <td>
+                            <a href="{{ url_for('invoice.view', invoice_id=invoice.id) }}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('invoice.download', invoice_id=invoice.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <p>Brak faktur dla tego klienta.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Wykres - historia płatności -->
+{% if invoices %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Historia płatności</h6>
+    </div>
+    <div class="card-body">
+        <div class="chart-area">
+            <canvas id="paymentHistoryChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if invoices %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Przygotuj dane dla wykresu
+        const invoices = {{ invoices|map(attribute='to_dict')|list|tojson }};
+        
+        // Sortuj faktury według daty wystawienia
+        invoices.sort((a, b) => new Date(a.issue_date) - new Date(b.issue_date));
+        
+        // Przygotuj etykiety i dane
+        const labels = invoices.map(invoice => {
+            const date = new Date(invoice.issue_date);
+            return date.toLocaleDateString('pl-PL', { month: 'short', year: 'numeric' });
+        });
+        
+        const data = invoices.map(invoice => parseFloat(invoice.total));
+        
+        // Skonfiguruj wykres
+        const ctx = document.getElementById('paymentHistoryChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Kwota faktury',
+                    data: data,
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + ' zł';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.parsed.y.toLocaleString() + ' zł';
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}

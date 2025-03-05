@@ -1,0 +1,315 @@
+{% extends 'layout.html' %}
+
+{% block styles %}
+<style>
+    .invoice-item {
+        background-color: #f8f9fc;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        border: 1px solid #e3e6f0;
+    }
+    
+    .remove-item-btn {
+        color: #e74a3b;
+        cursor: pointer;
+    }
+    
+    .summary-box {
+        background-color: #f8f9fc;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #e3e6f0;
+    }
+    
+    .total-row {
+        font-weight: bold;
+        font-size: 1.2em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="h3 mb-0 text-gray-800">Edytuj fakturę #{{ invoice.invoice_number }}</h1>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{{ url_for('invoice.view', invoice_id=invoice.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Powrót do faktury
+        </a>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Formularz faktury</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" id="invoice-form" action="{{ url_for('invoice.edit', invoice_id=invoice.id) }}">
+            {{ form.csrf_token }}
+            
+            <div class="row mb-4">
+                <!-- Podstawowe informacje o fakturze -->
+                <div class="col-md-6">
+                    <h5 class="mb-3">Informacje podstawowe</h5>
+                    
+                    <div class="mb-3 form-group required">
+                        {{ form.invoice_number.label(class="form-label") }}
+                        {{ form.invoice_number(class="form-control") }}
+                        {% if form.invoice_number.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.invoice_number.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3 form-group required">
+                        {{ form.client_id.label(class="form-label") }}
+                        {{ form.client_id(class="form-select") }}
+                        {% if form.client_id.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.client_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3 form-group required">
+                        {{ form.status.label(class="form-label") }}
+                        {{ form.status(class="form-select") }}
+                        {% if form.status.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.status.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3 form-group required">
+                        {{ form.payment_method.label(class="form-label") }}
+                        {{ form.payment_method(class="form-select") }}
+                        {% if form.payment_method.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.payment_method.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Daty i stawki podatku -->
+                <div class="col-md-6">
+                    <h5 class="mb-3">Daty i podatek</h5>
+                    
+                    <div class="mb-3 form-group required">
+                        {{ form.issue_date.label(class="form-label") }}
+                        {{ form.issue_date(class="form-control", type="date") }}
+                        {% if form.issue_date.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.issue_date.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3 form-group required">
+                        {{ form.due_date.label(class="form-label") }}
+                        {{ form.due_date(class="form-control", type="date") }}
+                        {% if form.due_date.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.due_date.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.tax_rate.label(class="form-label") }}
+                        {{ form.tax_rate(class="form-control", id="tax_rate") }}
+                        {% if form.tax_rate.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.tax_rate.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Domyślna stawka VAT dla wszystkich pozycji</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.discount.label(class="form-label") }}
+                        {{ form.discount(class="form-control", id="discount") }}
+                        {% if form.discount.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.discount.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pozycje faktury -->
+            <h5 class="mb-3">Pozycje faktury</h5>
+            
+            <div id="invoice-items">
+                {% for item_form in form.items %}
+                <div class="invoice-item">
+                    <div class="row">
+                        <div class="col-md-5 mb-3">
+                            {{ item_form.description.label(class="form-label") }}
+                            {{ item_form.description(class="form-control") }}
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            {{ item_form.quantity.label(class="form-label") }}
+                            {{ item_form.quantity(class="form-control") }}
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            {{ item_form.unit.label(class="form-label") }}
+                            {{ item_form.unit(class="form-control") }}
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            {{ item_form.unit_price.label(class="form-label") }}
+                            {{ item_form.unit_price(class="form-control") }}
+                        </div>
+                        <div class="col-md-1 mb-3 d-flex align-items-end justify-content-center">
+                            <button type="button" class="btn btn-sm btn-danger remove-item-btn">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-11">
+                            {{ item_form.tax_rate.label(class="form-label") }}
+                            {{ item_form.tax_rate(class="form-control") }}
+                            <div class="form-text">Pozostaw puste, aby użyć domyślnej stawki faktury</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <button type="button" id="add-item" class="btn btn-secondary mb-4">
+                <i class="fas fa-plus-circle me-1"></i>Dodaj pozycję
+            </button>
+            
+            <!-- Podsumowanie -->
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <!-- Notatki i warunki -->
+                    <h5 class="mb-3">Notatki i warunki</h5>
+                    
+                    <div class="mb-3">
+                        {{ form.notes.label(class="form-label") }}
+                        {{ form.notes(class="form-control", rows=3) }}
+                        <div class="form-text">Notatki będą widoczne na fakturze</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.terms.label(class="form-label") }}
+                        {{ form.terms(class="form-control", rows=3) }}
+                        <div class="form-text">Warunki płatności widoczne na fakturze</div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <!-- Podsumowanie kwot -->
+                    <h5 class="mb-3">Podsumowanie</h5>
+                    
+                    <div class="summary-box">
+                        <div class="row mb-2">
+                            <div class="col-6">Suma netto:</div>
+                            <div class="col-6 text-end" id="subtotal">{{ "%.2f"|format(invoice.subtotal) }} zł</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6">VAT:</div>
+                            <div class="col-6 text-end" id="tax_amount">{{ "%.2f"|format(invoice.tax_amount) }} zł</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6">Rabat:</div>
+                            <div class="col-6 text-end">
+                                <span id="discount_display">{{ "%.2f"|format(invoice.discount) }}</span> zł
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row total-row">
+                            <div class="col-6">Razem do zapłaty:</div>
+                            <div class="col-6 text-end" id="total">{{ "%.2f"|format(invoice.total) }} zł</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('invoice.view', invoice_id=invoice.id) }}" class="btn btn-secondary">
+                    <i class="fas fa-times me-1"></i>Anuluj
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i>Zapisz zmiany
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Szablon pozycji faktury do klonowania przez JavaScript -->
+<template id="item-template">
+    <div class="invoice-item">
+        <div class="row">
+            <div class="col-md-5 mb-3">
+                <label class="form-label" for="items-__index__-description">Opis</label>
+                <input class="form-control" id="items-__index__-description" name="items-__index__-description" required type="text">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label" for="items-__index__-quantity">Ilość</label>
+                <input class="form-control" id="items-__index__-quantity" name="items-__index__-quantity" required type="number" value="1" step="0.01" min="0.01">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label" for="items-__index__-unit">Jednostka</label>
+                <input class="form-control" id="items-__index__-unit" name="items-__index__-unit" type="text" value="szt.">
+            </div>
+            <div class="col-md-2 mb-3">
+                <label class="form-label" for="items-__index__-unit_price">Cena jednostkowa</label>
+                <input class="form-control" id="items-__index__-unit_price" name="items-__index__-unit_price" required type="number" value="0" step="0.01" min="0">
+            </div>
+            <div class="col-md-1 mb-3 d-flex align-items-end justify-content-center">
+                <button type="button" class="btn btn-sm btn-danger remove-item-btn">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-11">
+                <label class="form-label" for="items-__index__-tax_rate">Stawka VAT (%)</label>
+                <input class="form-control" id="items-__index__-tax_rate" name="items-__index__-tax_rate" type="number" value="23" step="0.01" min="0">
+                <div class="form-text">Pozostaw puste, aby użyć domyślnej stawki faktury</div>
+            </div>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Aktualizacja wyświetlanego rabatu
+        const discountInput = document.querySelector('#discount');
+        const discountDisplay = document.querySelector('#discount_display');
+        
+        if (discountInput && discountDisplay) {
+            discountInput.addEventListener('change', function() {
+                discountDisplay.textContent = parseFloat(this.value || 0).toFixed(2);
+            });
+        }
+    });
+</script>
+{% endblock %}

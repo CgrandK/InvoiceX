@@ -1,0 +1,194 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="h3 mb-0 text-gray-800">Raport miesięczny - {{ selected_year }}</h1>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <div class="btn-group">
+            <a href="{{ url_for('reports.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Powrót do raportów
+            </a>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-file-export me-1"></i>Eksportuj
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('reports.export_monthly', year=selected_year, format='csv') }}">
+                            <i class="fas fa-file-csv me-2"></i>CSV
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('reports.export_monthly', year=selected_year, format='excel') }}">
+                            <i class="fas fa-file-excel me-2"></i>Excel
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formularz wyboru roku -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Wybierz rok</h6>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('reports.monthly') }}" method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="year" class="form-label">Rok</label>
+                <select class="form-select" id="year" name="year">
+                    {% for year in years %}
+                    <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter me-1"></i>Filtruj
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Wykres -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Przychody miesięczne {{ selected_year }}</h6>
+    </div>
+    <div class="card-body">
+        <div class="chart-area">
+            <canvas id="monthlyRevenueChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Tabela z danymi -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Szczegółowe dane</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Miesiąc</th>
+                        <th class="text-center">Liczba faktur</th>
+                        <th class="text-end">Zapłacone</th>
+                        <th class="text-end">Oczekujące</th>
+                        <th class="text-end">Przeterminowane</th>
+                        <th class="text-end">Suma</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for month in monthly_data %}
+                    <tr>
+                        <td>{{ month.month }}</td>
+                        <td class="text-center">{{ month.invoices_count }}</td>
+                        <td class="text-end">{{ "%.2f"|format(month.paid) }} zł</td>
+                        <td class="text-end">{{ "%.2f"|format(month.pending) }} zł</td>
+                        <td class="text-end">{{ "%.2f"|format(month.overdue) }} zł</td>
+                        <td class="text-end font-weight-bold">{{ "%.2f"|format(month.total) }} zł</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-active">
+                        <th>Suma</th>
+                        <th class="text-center">{{ monthly_data|sum(attribute='invoices_count') }}</th>
+                        <th class="text-end">{{ "%.2f"|format(monthly_data|sum(attribute='paid')) }} zł</th>
+                        <th class="text-end">{{ "%.2f"|format(monthly_data|sum(attribute='pending')) }} zł</th>
+                        <th class="text-end">{{ "%.2f"|format(monthly_data|sum(attribute='overdue')) }} zł</th>
+                        <th class="text-end">{{ "%.2f"|format(monthly_data|sum(attribute='total')) }} zł</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Przygotuj dane dla wykresu
+        const monthlyData = {{ monthly_data|tojson }};
+        
+        // Przygotuj etykiety, dane dla zapłaconych, oczekujących i przeterminowanych
+        const labels = monthlyData.map(m => m.month);
+        const paidData = monthlyData.map(m => m.paid);
+        const pendingData = monthlyData.map(m => m.pending);
+        const overdueData = monthlyData.map(m => m.overdue);
+        
+        // Skonfiguruj wykres
+        const ctx = document.getElementById('monthlyRevenueChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Zapłacone',
+                        data: paidData,
+                        backgroundColor: 'rgba(28, 200, 138, 0.5)',
+                        borderColor: 'rgba(28, 200, 138, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Oczekujące',
+                        data: pendingData,
+                        backgroundColor: 'rgba(246, 194, 62, 0.5)',
+                        borderColor: 'rgba(246, 194, 62, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Przeterminowane',
+                        data: overdueData,
+                        backgroundColor: 'rgba(231, 74, 59, 0.5)',
+                        borderColor: 'rgba(231, 74, 59, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        stacked: true
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + ' zł';
+                            }
+                        },
+                        stacked: true
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.parsed.y.toLocaleString() + ' zł';
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

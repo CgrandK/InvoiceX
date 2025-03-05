@@ -1,0 +1,290 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+        <p class="text-muted">Witaj, {{ current_user.first_name }}! Oto podsumowanie Twoich faktur</p>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <a href="{{ url_for('invoice.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i>Nowa faktura
+        </a>
+    </div>
+</div>
+
+<!-- Statystyki -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Wszystkie faktury</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_invoices }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-file-invoice fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Opłacone faktury</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ paid_invoices }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Oczekujące faktury</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_invoices }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            Przeterminowane faktury</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ overdue_invoices }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Ostatnie faktury -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Ostatnie faktury</h6>
+                <a href="{{ url_for('dashboard.invoices') }}" class="btn btn-sm btn-primary">
+                    Zobacz wszystkie
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_invoices %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Numer</th>
+                                <th>Klient</th>
+                                <th>Kwota</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invoice in recent_invoices %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('invoice.view', invoice_id=invoice.id) }}">
+                                        {{ invoice.invoice_number }}
+                                    </a>
+                                </td>
+                                <td>{{ invoice.client.name }}</td>
+                                <td>{{ "%.2f"|format(invoice.total) }} zł</td>
+                                <td>
+                                    {% if invoice.status == 'paid' %}
+                                    <span class="badge bg-success">Opłacona</span>
+                                    {% elif invoice.status == 'pending' %}
+                                    <span class="badge bg-warning">Oczekująca</span>
+                                    {% elif invoice.status == 'overdue' %}
+                                    <span class="badge bg-danger">Przeterminowana</span>
+                                    {% elif invoice.status == 'draft' %}
+                                    <span class="badge bg-secondary">Szkic</span>
+                                    {% elif invoice.status == 'canceled' %}
+                                    <span class="badge bg-dark">Anulowana</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center my-3">Brak faktur. Utwórz swoją pierwszą fakturę!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Faktury z bliskim terminem płatności -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Zbliżające się terminy płatności</h6>
+            </div>
+            <div class="card-body">
+                {% if upcoming_invoices %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Numer</th>
+                                <th>Klient</th>
+                                <th>Termin płatności</th>
+                                <th>Kwota</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invoice in upcoming_invoices %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('invoice.view', invoice_id=invoice.id) }}">
+                                        {{ invoice.invoice_number }}
+                                    </a>
+                                </td>
+                                <td>{{ invoice.client.name }}</td>
+                                <td>{{ invoice.due_date.strftime('%d.%m.%Y') }}</td>
+                                <td>{{ "%.2f"|format(invoice.total) }} zł</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center my-3">Brak faktur z bliskim terminem płatności.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Podsumowanie finansowe -->
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Przychód miesięczny</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="monthlyRevenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Podsumowanie płatności</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h4 class="small font-weight-bold">
+                        Opłacone <span class="float-end">{{ "%.2f"|format(total_paid) }} zł</span>
+                    </h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ 100 * total_paid / (total_paid + total_pending) if total_paid + total_pending > 0 else 0 }}%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <h4 class="small font-weight-bold">
+                        Oczekujące <span class="float-end">{{ "%.2f"|format(total_pending) }} zł</span>
+                    </h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ 100 * total_pending / (total_paid + total_pending) if total_paid + total_pending > 0 else 0 }}%"></div>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('reports.index') }}" class="btn btn-primary">
+                        <i class="fas fa-chart-bar me-1"></i>Szczegółowe raporty
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Dane dla wykresu
+        const monthlyData = {{ monthly_revenue|tojson }};
+        
+        // Przygotuj dane dla wykresu
+        const labels = monthlyData.map(m => m.month);
+        const values = monthlyData.map(m => m.total);
+        
+        // Skonfiguruj wykres
+        const ctx = document.getElementById('monthlyRevenueChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Przychód (PLN)',
+                    data: values,
+                    backgroundColor: 'rgba(78, 115, 223, 0.5)',
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + ' zł';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.parsed.y.toLocaleString() + ' zł';
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

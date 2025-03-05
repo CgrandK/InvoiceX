@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <div class="error-page py-5">
+            <h1 class="display-1 text-gray-800">403</h1>
+            <p class="lead text-gray-800 mb-5">Dostęp zabroniony</p>
+            <p class="text-gray-600 mb-4">Niestety, nie masz uprawnień do wyświetlenia tej strony.</p>
+            <p class="text-gray-600 mb-5">Sprawdź swoje uprawnienia lub skontaktuj się z administratorem.</p>
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">
+                <i class="fas fa-arrow-left me-2"></i>Powrót do dashboardu
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
