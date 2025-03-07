@@ -1,3 +1,4 @@
+<!-- app/templates/invoice/view.html -->
 {% extends 'layout.html' %}
 
 {% block content %}
@@ -67,6 +68,9 @@
                 </div>
                 <div class="mb-3">
                     <strong>Termin płatności:</strong> {{ invoice.due_date.strftime('%d.%m.%Y') }}
+                </div>
+                <div class="mb-3">
+                    <strong>Data sprzedaży:</strong> {{ invoice.sale_date.strftime('%d.%m.%Y') if invoice.sale_date else 'Brak' }}
                 </div>
                 <div class="mb-3">
                     <strong>Status:</strong>
@@ -170,6 +174,9 @@
                 <div class="mb-2">
                     {% if invoice.payment_method == 'bank_transfer' %}
                     <strong>Przelew bankowy</strong>
+                    <div class="mt-3">
+                        <strong>Numer konta:</strong> {{ invoice.bank_account }}
+                    </div>
                     {% elif invoice.payment_method == 'cash' %}
                     <strong>Gotówka</strong>
                     {% elif invoice.payment_method == 'credit_card' %}
@@ -262,6 +269,14 @@
                     <tr class="table-primary">
                         <td colspan="5" class="text-end"><strong>Razem do zapłaty:</strong></td>
                         <td class="text-end"><strong>{{ "%.2f"|format(invoice.total) }} zł</strong></td>
+                        {% if invoice.tax_rate > 0 %}
+                        <td></td>
+                        <td></td>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <td colspan="5" class="text-end">Słownie:</td>
+                        <td class="text-end">{{ invoice.amount_in_words() }}</td>
                         {% if invoice.tax_rate > 0 %}
                         <td></td>
                         <td></td>

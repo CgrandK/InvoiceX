@@ -1,3 +1,4 @@
+# app/routes/invoice.py
 from flask import Blueprint, render_template, redirect, url_for, flash, request, send_file, abort, jsonify
 from flask_login import login_required, current_user
 from app import db
@@ -26,6 +27,8 @@ class InvoiceForm(FlaskForm):
     invoice_number = StringField('Numer faktury', validators=[DataRequired()])
     client_id = SelectField('Klient', coerce=int, validators=[DataRequired()])
     issue_date = DateField('Data wystawienia', format='%Y-%m-%d', validators=[DataRequired()])
+    sale_date = DateField('Data sprzedaży', format='%Y-%m-%d', validators=[Optional()])
+    bank_account = StringField('Numer konta bankowego', validators=[Optional()])
     due_date = DateField('Termin płatności', format='%Y-%m-%d', validators=[DataRequired()])
     payment_method = SelectField('Metoda płatności', choices=[
         (PaymentMethod.BANK_TRANSFER, 'Przelew bankowy'),
@@ -83,7 +86,9 @@ def create():
                 'tax_rate': float(request.form.get('tax_rate', 0)),
                 'discount': float(request.form.get('discount', 0)),
                 'notes': request.form.get('notes', ''),
-                'terms': request.form.get('terms', '')
+                'terms': request.form.get('terms', ''),
+                'sale_date': datetime.strptime(request.form.get('sale_date'), '%Y-%m-%d').date() if request.form.get('sale_date') else None,
+                'bank_account': request.form.get('bank_account', ''),
             }
             
             # Walidacja podstawowych pól
@@ -170,6 +175,8 @@ def create():
                 client_id=int(invoice_data['client_id']),
                 invoice_number=invoice_data['invoice_number'],
                 issue_date=invoice_data['issue_date'],
+                sale_date=invoice_data['sale_date'],
+                bank_account=invoice_data['bank_account'],
                 due_date=invoice_data['due_date'],
                 payment_method=invoice_data['payment_method'],
                 status=invoice_data['status'],
@@ -259,6 +266,8 @@ def edit(invoice_id):
         invoice.client_id = form.client_id.data
         invoice.invoice_number = form.invoice_number.data
         invoice.issue_date = form.issue_date.data
+        invoice.sale_date = form.sale_date.data
+        invoice.bank_account = form.bank_account.data
         invoice.due_date = form.due_date.data
         invoice.payment_method = form.payment_method.data
         invoice.status = form.status.data
@@ -266,6 +275,8 @@ def edit(invoice_id):
         invoice.discount = form.discount.data
         invoice.notes = form.notes.data
         invoice.terms = form.terms.data
+
+
         
         # Usuń istniejące pozycje i dodaj nowe
         InvoiceItem.query.filter_by(invoice_id=invoice.id).delete()

@@ -1,3 +1,4 @@
+<!-- app/templates/invoice/create.html -->
 {% extends 'layout.html' %}
 
 {% block styles %}
@@ -129,6 +130,18 @@
                             </div>
                         {% endif %}
                     </div>
+
+                    <div class="mb-3 form-group">
+                        <label class="form-label" for="bank_account">Numer konta bankowego</label>
+                        <input type="text" class="form-control" id="bank_account" name="bank_account" value="{{ form.bank_account.data or '' }}">
+                        {% if form.bank_account.errors %}
+                            <div class="form-error-msg">
+                                {% for error in form.bank_account.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
                 
                 <!-- Daty i stawki podatku -->
@@ -146,7 +159,19 @@
                             </div>
                         {% endif %}
                     </div>
-                    
+
+                    <div class="mb-3 form-group">
+                        <label class="form-label" for="sale_date">Data sprzedaży</label>
+                        <input type="date" class="form-control" id="sale_date" name="sale_date" value="{{ form.sale_date.data.strftime('%Y-%m-%d') if form.sale_date.data else '' }}">
+                        {% if form.sale_date.errors %}
+                            <div class="form-error-msg">
+                                {% for error in form.sale_date.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
                     <div class="mb-3 form-group">
                         <label class="form-label required-label" for="due_date">Termin płatności</label>
                         <input type="date" class="form-control" id="due_date" name="due_date" value="{{ form.due_date.data.strftime('%Y-%m-%d') if form.due_date.data else '' }}" required>

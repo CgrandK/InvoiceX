@@ -1,3 +1,5 @@
+# app/models/invoice.py:
+
 from datetime import datetime, timedelta
 from app import db
 import uuid
@@ -35,8 +37,10 @@ class Invoice(db.Model):
     
     invoice_number = db.Column(db.String(50), nullable=False, unique=True)
     issue_date = db.Column(db.Date, nullable=False, default=datetime.utcnow().date())
-    due_date = db.Column(db.Date, nullable=False, 
-                          default=lambda: (datetime.utcnow() + timedelta(days=14)).date())
+    sale_date = db.Column(db.Date, nullable=True)
+    due_date = db.Column(db.Date, nullable=False, default=lambda: (datetime.utcnow() + timedelta(days=14)).date())
+    bank_account = db.Column(db.String(100), nullable=True)
+
     
     status = db.Column(db.String(20), nullable=False, default=InvoiceStatus.DRAFT)
     payment_method = db.Column(db.String(20), default=PaymentMethod.BANK_TRANSFER)
@@ -130,3 +134,27 @@ class Invoice(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'items': [item.to_dict() for item in self.items]
         }
+
+    # def amount_in_words(self):
+    #     """Konwertuje kwotę faktury na słowa."""
+    #     from num2words import num2words
+        
+    #     # Rozdziel na złote i grosze
+    #     amount_str = str(self.total)
+    #     if '.' in amount_str:
+    #         zloty, grosze = amount_str.split('.')
+    #         # Upewnij się, że grosze mają zawsze 2 cyfry
+    #         grosze = grosze.ljust(2, '0')[:2]
+    #     else:
+    #         zloty, grosze = amount_str, '00'
+        
+    #     # Konwertuj na słowa
+    #     zloty_words = num2words(int(zloty), lang='pl')
+        
+    #     # Zwróć kwotę słownie
+    #     return f"{zloty_words} {grosze}/100 PLN"
+
+    def amount_in_words(self):
+        """Konwertuje kwotę faktury na słowa."""
+        # Tymczasowo zwracamy statyczny tekst
+        return "Tysiąc dwieście trzydzieści 00/100 PLN"

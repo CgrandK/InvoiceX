@@ -2,7 +2,8 @@
  * InvoiceX - Main JavaScript file
  * 
  * Contains common functionality used across the application
- */
+ * app/static/js/main.js 
+*/
 
 document.addEventListener('DOMContentLoaded', function() {
     // Inicjalizacja tooltipów Bootstrap

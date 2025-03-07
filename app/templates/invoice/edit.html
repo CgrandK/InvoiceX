@@ -1,3 +1,4 @@
+<!-- app/templates/invoice/edit.html -->
 {% extends 'layout.html' %}
 
 {% block styles %}
@@ -102,7 +103,19 @@
                         {% endif %}
                     </div>
                 </div>
-                
+
+                <div class="mb-3 form-group">
+                    {{ form.bank_account.label(class="form-label") }}
+                    {{ form.bank_account(class="form-control") }}
+                    {% if form.bank_account.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.bank_account.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
                 <!-- Daty i stawki podatku -->
                 <div class="col-md-6">
                     <h5 class="mb-3">Daty i podatek</h5>
@@ -113,6 +126,18 @@
                         {% if form.issue_date.errors %}
                             <div class="invalid-feedback d-block">
                                 {% for error in form.issue_date.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3 form-group">
+                        {{ form.sale_date.label(class="form-label") }}
+                        {{ form.sale_date(class="form-control", type="date") }}
+                        {% if form.sale_date.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.sale_date.errors %}
                                     {{ error }}
                                 {% endfor %}
                             </div>

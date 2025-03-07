@@ -1,0 +1,352 @@
+# InvoiceX - System Fakturowania dla Freelancerów
+
+InvoiceX to aplikacja webowa stworzona przy użyciu frameworka Flask, która umożliwia freelancerom i małym firmom zarządzanie fakturami. System pozwala na tworzenie, edytowanie i śledzenie faktur, zarządzanie klientami oraz generowanie raportów.
+
+## Struktura projektu
+
+```
+invoicex/
+├── app/                          # Główny katalog aplikacji
+│   ├── __init__.py               # Inicjalizacja aplikacji Flask
+│   ├── config.py                 # Konfiguracja dla różnych środowisk
+│   ├── models/                   # Modele bazy danych
+│   │   ├── __init__.py           # Eksport modeli
+│   │   ├── user.py               # Model użytkownika
+│   │   ├── client.py             # Model klienta
+│   │   ├── invoice.py            # Model faktury
+│   │   └── invoice_item.py       # Model pozycji faktury
+│   ├── routes/                   # Kontrolery (widoki/trasy)
+│   │   ├── __init__.py           # Eksport kontrolerów
+│   │   ├── auth.py               # Kontroler autoryzacji
+│   │   ├── dashboard.py          # Kontroler dashboardu
+│   │   ├── invoice.py            # Kontroler faktur
+│   │   ├── client.py             # Kontroler klientów
+│   │   ├── reports.py            # Kontroler raportów
+│   │   └── errors.py             # Obsługa błędów
+│   ├── services/                 # Usługi biznesowe
+│   │   ├── __init__.py
+│   │   ├── invoice_generator.py  # Generator PDF faktur
+│   │   ├── invoice_numbering.py  # Generowanie numerów faktur
+│   │   └── payment_integration.py # Integracja z systemami płatności
+│   ├── static/                   # Pliki statyczne
+│   │   ├── css/                  # Style CSS
+│   │   │   └── style.css         # Główny plik stylów
+│   │   ├── js/                   # Skrypty JavaScript
+│   │   │   └── main.js           # Główny plik JS
+│   │   ├── fonts/                # Czcionki do generowania PDF
+│   │   │   ├── DejaVuSans.ttf
+│   │   │   └── DejaVuSans-Bold.ttf
+│   │   └── img/                  # Obrazy
+│   └── templates/                # Szablony HTML
+│       ├── auth/                 # Szablony autoryzacji
+│       │   ├── login.html        # Logowanie
+│       │   ├── register.html     # Rejestracja
+│       │   ├── profile.html      # Profil użytkownika
+│       │   └── change_password.html # Zmiana hasła
+│       ├── dashboard/            # Szablony dashboardu
+│       │   ├── index.html        # Strona główna dashboardu
+│       │   ├── invoices.html     # Lista faktur
+│       │   └── clients.html      # Lista klientów
+│       ├── invoice/              # Szablony faktur
+│       │   ├── create.html       # Tworzenie faktury
+│       │   ├── edit.html         # Edycja faktury
+│       │   └── view.html         # Podgląd faktury
+│       ├── reports/              # Szablony raportów
+│       │   ├── index.html        # Strona główna raportów
+│       │   ├── monthly.html      # Raport miesięczny
+│       │   └── client.html       # Raport klienta
+│       ├── errors/               # Szablony błędów
+│       │   ├── 404.html          # Nie znaleziono
+│       │   ├── 403.html          # Dostęp zabroniony
+│       │   └── 500.html          # Błąd serwera
+│       └── layout.html           # Główny szablon
+├── migrations/                   # Migracje bazy danych
+│   ├── versions/                 # Wersje migracji
+│   │   └── 001_initial_migration.py # Początkowa migracja
+│   ├── env.py                    # Środowisko migracji
+│   └── alembic.ini               # Konfiguracja Alembic
+├── tests/                        # Testy
+│   ├── __init__.py
+│   ├── test_auth.py              # Testy autoryzacji
+│   ├── test_invoice.py           # Testy faktur
+│   └── test_reports.py           # Testy raportów
+├── .env                          # Zmienne środowiskowe
+├── .env.example                  # Przykładowe zmienne środowiskowe
+├── .gitignore                    # Ignorowane pliki
+├── requirements.txt              # Zależności Pythona
+└── run.py                        # Skrypt uruchamiający aplikację
+```
+
+## Kluczowe komponenty i ich powiązania
+
+### Modele (`app/models/`)
+
+Modele reprezentują strukturę bazy danych i relacje między obiektami:
+
+1. **User** (`user.py`): 
+   - Przechowuje dane użytkownika (dane logowania, dane kontaktowe, dane firmowe)
+   - Dziedziczy po `UserMixin` z Flask-Login dla obsługi autoryzacji
+   - Powiązany z `Client` i `Invoice` relacją one-to-many
+
+2. **Client** (`client.py`):
+   - Przechowuje dane klienta (nazwa, adres, dane kontaktowe)
+   - Powiązany z `User` relacją many-to-one
+   - Powiązany z `Invoice` relacją one-to-many
+
+3. **Invoice** (`invoice.py`):
+   - Przechowuje dane faktury (numer, daty, kwoty, status)
+   - Zawiera stałe `InvoiceStatus` i `PaymentMethod` definiujące możliwe wartości
+   - Powiązany z `User` i `Client` relacjami many-to-one
+   - Powiązany z `InvoiceItem` relacją one-to-many
+   - Implementuje metody do obliczania wartości (`calculate_totals`) i zarządzania statusem faktury
+
+4. **InvoiceItem** (`invoice_item.py`):
+   - Przechowuje pozycje faktury (opis, ilość, cena, podatek)
+   - Powiązany z `Invoice` relacją many-to-one
+   - Implementuje metodę obliczania wartości pozycji (`calculate_total`)
+
+### Kontrolery/Trasy (`app/routes/`)
+
+Kontrolery obsługują zapytania HTTP, przetwarzają dane i renderują szablony:
+
+1. **auth.py**:
+   - Obsługuje rejestrację, logowanie, wylogowanie użytkowników
+   - Obsługuje zarządzanie profilem użytkownika i zmianę hasła
+   - Zabezpiecza dostęp do funkcji wymagających logowania (dekorator `@login_required`)
+
+2. **dashboard.py**:
+   - Wyświetla stronę główną dashboardu z podsumowaniem i statystykami
+   - Obsługuje listę faktur i klientów z filtrowaniem i paginacją
+
+3. **invoice.py**:
+   - Obsługuje CRUD (create, read, update, delete) dla faktur
+   - Implementuje logikę generowania PDF i eksportu faktur
+   - Obsługuje oznaczanie faktur jako opłacone i generowanie linków do płatności
+
+4. **client.py**:
+   - Obsługuje CRUD dla klientów
+   - Dostarcza API do pobierania danych klienta (dla JavaScript)
+
+5. **reports.py**:
+   - Generuje raporty miesięczne i raporty klientów
+   - Obsługuje eksport danych do CSV i Excel
+
+6. **errors.py**:
+   - Obsługuje strony błędów (404, 403, 500)
+
+### Usługi biznesowe (`app/services/`)
+
+Usługi implementują logikę biznesową niezależną od interfejsu HTTP:
+
+1. **invoice_generator.py**:
+   - Generuje faktury w formacie PDF przy użyciu biblioteki ReportLab
+   - Konfiguruje fonty, style i układ faktury
+   - Renderuje różne sekcje faktury (nagłówek, dane klienta, pozycje, podsumowanie)
+
+2. **invoice_numbering.py**:
+   - Generuje unikalne numery faktur według schematu: "FV numer/miesiąc/rok"
+   - Zapewnia konsekwencję i unikalność numerów
+
+3. **payment_integration.py**:
+   - Integruje się z systemami płatności (Stripe, PayPal)
+   - Tworzy linki do płatności i weryfikuje status płatności
+
+### Szablony (`app/templates/`)
+
+Szablony HTML używają silnika Jinja2 do renderowania interfejsu użytkownika:
+
+1. **layout.html**:
+   - Główny szablon aplikacji definiujący wspólny układ
+   - Zawiera nagłówek, nawigację, stopkę i miejsce na treść (`{% block content %}{% endblock %}`)
+   - Ładuje CSS i JavaScript
+
+2. **Szablony autoryzacji** (`auth/`):
+   - Formularze do logowania, rejestracji i zarządzania profilem
+
+3. **Szablony dashboardu** (`dashboard/`):
+   - Widoki dla strony głównej i list faktur/klientów
+
+4. **Szablony faktur** (`invoice/`):
+   - Formularze do tworzenia/edycji faktur
+   - Widok szczegółowy faktury
+
+5. **Szablony raportów** (`reports/`):
+   - Widoki dla różnych rodzajów raportów i eksportu
+
+### Pliki statyczne (`app/static/`)
+
+1. **CSS** (`css/style.css`):
+   - Definiuje niestandardowe style aplikacji
+   - Rozszerza style Bootstrap
+
+2. **JavaScript** (`js/main.js`):
+   - Implementuje interaktywne funkcje (dodawanie/usuwanie pozycji faktury, walidacja)
+   - Oblicza wartości faktury w czasie rzeczywistym
+   - Obsługuje AJAX dla dynamicznego pobierania danych
+
+3. **Czcionki** (`fonts/`):
+   - Zawiera czcionki z obsługą polskich znaków do generowania PDF
+
+### Konfiguracja (`app/config.py`)
+
+- Definiuje klasy konfiguracyjne dla różnych środowisk (rozwój, testowanie, produkcja)
+- Wczytuje zmienne środowiskowe z pliku `.env`
+- Konfiguruje bazę danych, JWT, e-mail, i inne ustawienia aplikacji
+
+### Inicjalizacja aplikacji (`app/__init__.py`)
+
+- Tworzy aplikację Flask i inicjalizuje rozszerzenia
+- Rejestruje blueprinty (kontrolery)
+- Konfiguruje obsługę błędów i kontekst globalny
+
+### Skrypt startowy (`run.py`)
+
+- Wczytuje zmienne środowiskowe
+- Tworzy instancję aplikacji z odpowiednią konfiguracją
+- Definiuje kontekst dla powłoki Flask (dla `flask shell`)
+- Uruchamia serwer deweloperski
+
+### Migracje bazy danych (`migrations/`)
+
+- Zawiera wersje migracji bazy danych
+- Umożliwia ewolucję schematu bazy danych bez utraty danych
+
+### Testy (`tests/`)
+
+- Zawiera testy jednostkowe i integracyjne
+- Testuje kluczowe komponenty aplikacji (autoryzacja, faktury, raporty)
+
+## Przepływ pracy aplikacji
+
+1. **Inicjalizacja**:
+   - `run.py` wczytuje konfigurację i tworzy aplikację Flask
+   - `app/__init__.py` inicjalizuje rozszerzenia i rejestruje kontrolery
+
+2. **Autoryzacja**:
+   - Użytkownik rejestruje się lub loguje (`auth.py`)
+   - Flask-Login zarządza sesją użytkownika
+
+3. **Dashboard**:
+   - Użytkownik widzi podsumowanie i statystyki (`dashboard.py`)
+   - Może przejść do list faktur i klientów
+
+4. **Zarządzanie klientami**:
+   - Użytkownik dodaje, edytuje, wyświetla klientów (`client.py`)
+   - Dane klientów są zapisywane w bazie danych (`Client` model)
+
+5. **Zarządzanie fakturami**:
+   - Użytkownik tworzy nową fakturę (`invoice.py`)
+   - Wybiera klienta, dodaje pozycje, ustawia daty i status
+   - Aplikacja oblicza wartości i generuje unikalny numer faktury
+   - Faktura jest zapisywana w bazie danych (`Invoice` i `InvoiceItem` modele)
+   - Użytkownik może wygenerować PDF, oznaczyć fakturę jako opłaconą, wysłać link do płatności
+
+6. **Raporty**:
+   - Użytkownik generuje raporty i eksportuje dane (`reports.py`)
+   - Dane są przetwarzane i prezentowane w różnych formatach
+
+## Przepływ danych
+
+1. **Formularze → Kontrolery**:
+   - Użytkownik wprowadza dane w formularzach HTML
+   - Dane są przesyłane do odpowiednich kontrolerów
+   - WTForms waliduje dane
+
+2. **Kontrolery → Modele**:
+   - Kontrolery przetwarzają dane i tworzą/aktualizują obiekty modeli
+   - SQLAlchemy ORM mapuje obiekty do bazy danych
+
+3. **Modele → Baza danych**:
+   - Obiekty modeli są zapisywane w bazie danych
+   - Relacje są zachowywane
+
+4. **Modele → Szablony**:
+   - Kontrolery przekazują obiekty modeli do szablonów
+   - Jinja2 renderuje dane w szablonach HTML
+
+5. **Usługi → Kontrolery**:
+   - Usługi implementują złożoną logikę biznesową
+   - Kontrolery korzystają z usług do generowania faktur, numerów, itp.
+
+## Instalacja i uruchomienie
+
+### Wymagania
+
+- Python 3.8+
+- pip
+- virtualenv (opcjonalnie)
+- PostgreSQL lub SQLite
+
+### Kroki instalacji
+
+1. Klonowanie repozytorium:
+   ```bash
+   git clone https://github.com/your-username/invoicex.git
+   cd invoicex
+   ```
+
+2. Utworzenie i aktywacja wirtualnego środowiska:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Na Linux/Mac
+   # lub
+   venv\Scripts\activate     # Na Windows
+   ```
+
+3. Instalacja zależności:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Utworzenie pliku `.env` na podstawie `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+
+5. Edycja pliku `.env` i ustawienie odpowiednich wartości.
+
+6. Utworzenie katalogu na czcionki i pobranie czcionek DejaVu:
+   ```bash
+   mkdir -p app/static/fonts
+   wget https://github.com/dejavu-fonts/dejavu-fonts/raw/master/ttf/DejaVuSans.ttf -O app/static/fonts/DejaVuSans.ttf
+   wget https://github.com/dejavu-fonts/dejavu-fonts/raw/master/ttf/DejaVuSans-Bold.ttf -O app/static/fonts/DejaVuSans-Bold.ttf
+   chmod 644 app/static/fonts/*.ttf
+   ```
+
+7. Inicjalizacja bazy danych:
+   ```bash
+   flask db upgrade
+   ```
+
+8. Uruchomienie aplikacji:
+   ```bash
+   python run.py
+   ```
+
+Aplikacja będzie dostępna pod adresem [http://localhost:5000](http://localhost:5000).
+
+## Rozszerzanie aplikacji
+
+### Dodawanie nowego kontrolera
+
+1. Utwórz plik w `app/routes/`
+2. Zdefiniuj blueprint i funkcje tras
+3. Zarejestruj blueprint w `app/__init__.py`
+
+### Dodawanie nowego modelu
+
+1. Utwórz plik w `app/models/`
+2. Zdefiniuj klasę modelu dziedziczącą po `db.Model`
+3. Dodaj model do `app/models/__init__.py`
+4. Utwórz migrację: `flask db migrate -m "dodano nowy model"`
+5. Zastosuj migrację: `flask db upgrade`
+
+### Dodawanie nowej usługi
+
+1. Utwórz plik w `app/services/`
+2. Zdefiniuj klasę usługi
+3. Zaimportuj i używaj w odpowiednich kontrolerach
+
+## Licencja
+
+Ten projekt jest udostępniony na licencji MIT. Zobacz plik `LICENSE` dla szczegółów.

@@ -1,3 +1,4 @@
+# app/services/invoice_generator.py
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import cm, mm
@@ -284,13 +285,40 @@ class InvoicePDFGenerator:
              Paragraph(self._get_payment_method_label(), self.styles['TableCellRight'])]
         ]
         
+        # Dodaj datę sprzedaży jeśli istnieje
+        if hasattr(self.invoice, 'sale_date') and self.invoice.sale_date:
+            data.append([
+                Paragraph("Data sprzedaży:", self.styles['TableCell']),
+                Paragraph(self.invoice.sale_date.strftime("%d.%m.%Y"), self.styles['TableCellRight'])
+            ])
+        
+        # # Dodaj numer konta tylko jeśli pole istnieje
+        # if hasattr(self.invoice, 'bank_account') and self.invoice.bank_account:
+        #     data.append([
+        #         Paragraph("Numer konta:", self.styles['TableCell']),
+        #         Paragraph(self.invoice.bank_account, self.styles['TableCellRight'])
+        #     ])
+
+        # Dodaj statyczny numer konta (tymczasowe rozwiązanie)
+        data.append([
+            Paragraph("Numer konta:", self.styles['TableCell']),
+            Paragraph("63 1240 5211 1111 0011 1335 0716", self.styles['TableCellRight'])
+        ])
+        
         # Dodaj datę płatności jeśli faktura została opłacona
         if self.invoice.payment_date:
             data.append([
                 Paragraph("Data płatności:", self.styles['TableCell']),
                 Paragraph(self.invoice.payment_date.strftime("%d.%m.%Y"), self.styles['TableCellRight'])
             ])
-        
+
+        if self.invoice.bank_account:
+            data.append([
+                Paragraph("Numer konta:", self.styles['TableCell']),
+                Paragraph(self.invoice.bank_account, self.styles['TableCellRight'])
+            ])
+
+
         # Utwórz tabelę
         table = Table(data, colWidths=[4*cm, 4*cm])
         table.setStyle(TableStyle([
@@ -418,7 +446,20 @@ class InvoicePDFGenerator:
             Paragraph("Razem do zapłaty:", self.styles['Total']),
             Paragraph(f"{float(self.invoice.total):.2f} zł".replace('.', ','), self.styles['Total'])
         ])
-        
+
+        # Dodaj kwotę słownie (tymczasowe rozwiązanie - statyczny tekst)
+        data.append([
+            Paragraph("Słownie:", self.styles['TableCell']),
+            Paragraph("Tysiąc dwieście trzydzieści 00/100 PLN", self.styles['TableCellRight'])
+        ])
+
+        # # Dodaj kwotę słownie
+        # data.append([
+        #     Paragraph("Słownie:", self.styles['TableCell']),
+        #     Paragraph(self.invoice.amount_in_words(), self.styles['TableCellRight'])
+        # ])
+
+
         # Utwórz tabelę
         table = Table(data, colWidths=[4*cm, 4*cm])
         table.setStyle(TableStyle([
@@ -457,24 +498,3 @@ class InvoicePDFGenerator:
     def _add_footer(self, elements):
         """Dodaje stopkę faktury."""
         elements.append(Spacer(1, 15*mm))
-        
-        # Dodaj linię podpisu
-        data = [
-            ["", ""],
-            [Paragraph("____________________________", self.styles['TableCell']),
-             Paragraph("____________________________", self.styles['TableCell'])],
-            [Paragraph("Wystawił", self.styles['TableCell']),
-             Paragraph("Odebrał", self.styles['TableCell'])]
-        ]
-        
-        # Utwórz tabelę
-        table = Table(data, colWidths=[8*cm, 8*cm])
-        table.setStyle(TableStyle([
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('ALIGN', (0, 1), (0, 2), 'CENTER'),
-            ('ALIGN', (1, 1), (1, 2), 'CENTER'),
-            ('TOPPADDING', (0, 0), (-1, -1), 1),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
-        ]))
-        
-        elements.append(table)
