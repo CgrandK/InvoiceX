@@ -37,11 +37,16 @@ def index():
         .scalar() or 0
     
     # Pobierz lata dla formularza
-    years = db.session.query(extract('year', Invoice.issue_date).distinct())\
-        .filter(Invoice.user_id == current_user.id)\
-        .order_by(extract('year', Invoice.issue_date).desc())\
+    years = db.session.query(func.extract('year', Invoice.issue_date).label('year'))\
+        .filter(
+            Invoice.user_id == current_user.id,
+            Invoice.issue_date != None
+        )\
+        .distinct()\
+        .order_by(func.extract('year', Invoice.issue_date).desc())\
         .all()
-    years = [int(year[0]) for year in years]
+
+    years = [int(year.year) for year in years if year.year is not None]
     
     # Jeśli nie ma faktur, dodaj bieżący rok
     if not years:
@@ -63,28 +68,25 @@ def index():
 @reports_bp.route('/monthly')
 @login_required
 def monthly():
-    """
-    Raport miesięczny - pokazuje podsumowanie faktur według miesięcy
-    """
     year = request.args.get('year', datetime.now().year, type=int)
-    
-    # Pobierz dane dla każdego miesiąca
+
     monthly_data = []
-    
+
     for month in range(1, 13):
-        # Pobierz faktury dla danego miesiąca
+        # ✅ Poprawione zapytanie z filtrowaniem nieprawidłowych dat
         month_invoices = Invoice.query\
-            .filter(Invoice.user_id == current_user.id)\
-            .filter(extract('year', Invoice.issue_date) == year)\
-            .filter(extract('month', Invoice.issue_date) == month)\
+            .filter(
+                Invoice.user_id == current_user.id,
+                Invoice.issue_date.isnot(None),  # upewnij się, że issue_date nie jest NULL
+            )\
+            .filter(func.extract('year', Invoice.issue_date) == year)\
+            .filter(func.extract('month', Invoice.issue_date) == month)\
             .all()
-        
-        # Oblicz sumę faktur według statusu
+
         paid = sum(float(inv.total) for inv in month_invoices if inv.status == InvoiceStatus.PAID)
         pending = sum(float(inv.total) for inv in month_invoices if inv.status == InvoiceStatus.PENDING)
         overdue = sum(float(inv.total) for inv in month_invoices if inv.status == InvoiceStatus.OVERDUE)
-        
-        # Dodaj do listy
+
         monthly_data.append({
             'month': calendar.month_name[month],
             'month_num': month,
@@ -94,23 +96,25 @@ def monthly():
             'overdue': overdue,
             'total': paid + pending + overdue
         })
-    
-    # Pobierz dostępne lata
-    years = db.session.query(extract('year', Invoice.issue_date).distinct())\
-        .filter(Invoice.user_id == current_user.id)\
-        .order_by(extract('year', Invoice.issue_date).desc())\
-        .all()
-    years = [int(year[0]) for year in years]
-    
-    # Jeśli nie ma faktur, dodaj bieżący rok
+
+    # ✅ Poprawka zapytania o lata
+    years = db.session.query(func.extract('year', Invoice.issue_date).label('year'))\
+        .filter(
+            Invoice.user_id == current_user.id,
+            Invoice.issue_date.isnot(None)
+        ).distinct().order_by(func.extract('year', Invoice.issue_date).desc()).all()
+
+    years = [int(year.year) for year in years if year.year is not None]
+
     if not years:
         years = [datetime.now().year]
-    
+
     return render_template('reports/monthly.html',
-                          title=f'Raport miesięczny - {year}',
-                          monthly_data=monthly_data,
-                          selected_year=year,
-                          years=years)
+                           title=f'Raport miesięczny - {year}',
+                           monthly_data=monthly_data,
+                           selected_year=year,
+                           years=years)
+
 
 @reports_bp.route('/client')
 @login_required
@@ -164,10 +168,12 @@ def export_monthly():
     for month in range(1, 13):
         # Pobierz faktury dla danego miesiąca
         month_invoices = Invoice.query\
-            .filter(Invoice.user_id == current_user.id)\
-            .filter(extract('year', Invoice.issue_date) == year)\
-            .filter(extract('month', Invoice.issue_date) == month)\
-            .all()
+            .filter(
+                Invoice.user_id == current_user.id,
+                Invoice.issue_date.isnot(None),
+                extract('year', Invoice.issue_date) == year,
+                extract('month', Invoice.issue_date) == month
+            ).all()
         
         # Oblicz sumę faktur według statusu
         paid = sum(float(inv.total) for inv in month_invoices if inv.status == InvoiceStatus.PAID)

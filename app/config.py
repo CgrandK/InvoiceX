@@ -1,6 +1,6 @@
 import os
 from datetime import timedelta
-
+ 
 class Config:
     # Podstawowa konfiguracja
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
@@ -51,8 +51,6 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
-    # W produkcji używamy PostgreSQL
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-    # Upewnij się, że SECRET_KEY jest ustawiony w zmiennych środowiskowych
     SECRET_KEY = os.environ.get('SECRET_KEY')
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')

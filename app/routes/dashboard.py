@@ -2,8 +2,10 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app import db
 from app.models import Invoice, Client, InvoiceStatus
+from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta
 from sqlalchemy import func
+import calendar
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -33,34 +35,53 @@ def index():
         .order_by(Invoice.due_date.asc())\
         .limit(5).all()
     
-    # Przychód miesięczny (ostatnie 6 miesięcy)
-    today = datetime.utcnow().date()
-    first_day_current_month = today.replace(day=1)
+ # Przychód miesięczny (ostatnie 6 miesięcy)
     monthly_revenue = []
-    
+    today = datetime.today()
+
     for i in range(5, -1, -1):
-        month_date = first_day_current_month - timedelta(days=1)
-        for _ in range(i):
-            month_date = month_date.replace(day=1) - timedelta(days=1)
-        
-        month_start = month_date.replace(day=1)
-        if month_date.month == 12:
-            month_end = month_date.replace(year=month_date.year + 1, month=1, day=1) - timedelta(days=1)
-        else:
-            month_end = month_date.replace(month=month_date.month + 1, day=1) - timedelta(days=1)
-        
-        # Pobierz sumę płatności dla danego miesiąca
+        month = (today.month - i - 1) % 12 + 1
+        year = today.year + ((today.month - i - 1) // 12)
+
+        first_day = datetime(year, month, 1)
+        days_in_month = calendar.monthrange(year, month)[1]
+        last_day = datetime(year, month, days_in_month, 23, 59, 59)
+
         total = db.session.query(func.sum(Invoice.total))\
-            .filter(Invoice.user_id == current_user.id)\
-            .filter(Invoice.status == InvoiceStatus.PAID)\
-            .filter(Invoice.payment_date >= month_start)\
-            .filter(Invoice.payment_date <= month_end)\
-            .scalar() or 0
-        
+            .filter(
+                Invoice.user_id == current_user.id,
+                Invoice.status == InvoiceStatus.PAID,
+                Invoice.payment_date >= first_day,
+                Invoice.payment_date <= last_day
+            ).scalar() or 0
+
         monthly_revenue.append({
-            'month': month_date.strftime('%B %Y'),
+            'month': calendar.month_name[month],
             'total': float(total)
         })
+
+
+    # Pobierz najlepszych klientów (wg. wartości faktur)
+    top_clients = db.session.query(
+        Client.name,
+        func.sum(Invoice.total).label('total_value')
+    ).join(Invoice, Invoice.client_id == Client.id)\
+     .filter(Client.user_id == current_user.id)\
+     .group_by(Client.id)\
+     .order_by(func.sum(Invoice.total).desc())\
+     .limit(5).all()
+
+    # Podsumowanie płatności
+    total_paid = db.session.query(func.sum(Invoice.total))\
+        .filter_by(user_id=current_user.id, status=InvoiceStatus.PAID)\
+        .scalar() or 0
+
+    total_pending = db.session.query(func.sum(Invoice.total))\
+        .filter(
+            Invoice.user_id == current_user.id,
+            Invoice.status.in_([InvoiceStatus.PENDING, InvoiceStatus.OVERDUE])
+        ).scalar() or 0
+
     
     # Pobierz najlepszych klientów (wg. wartości faktur)
     top_clients = db.session.query(
@@ -83,19 +104,21 @@ def index():
         .filter(Invoice.user_id == current_user.id)\
         .filter(Invoice.status.in_([InvoiceStatus.PENDING, InvoiceStatus.OVERDUE]))\
         .scalar() or 0
-    
+
+
     return render_template('dashboard/index.html',
-                          title='Dashboard',
-                          total_invoices=total_invoices,
-                          pending_invoices=pending_invoices,
-                          paid_invoices=paid_invoices,
-                          overdue_invoices=overdue_invoices,
-                          recent_invoices=recent_invoices,
-                          upcoming_invoices=upcoming_invoices,
-                          monthly_revenue=monthly_revenue,
-                          top_clients=top_clients,
-                          total_paid=float(total_paid),
-                          total_pending=float(total_pending))
+                           title='Dashboard',
+                           total_invoices=total_invoices,
+                           pending_invoices=pending_invoices,
+                           paid_invoices=paid_invoices,
+                           overdue_invoices=overdue_invoices,
+                           recent_invoices=recent_invoices,
+                           upcoming_invoices=upcoming_invoices,
+                           monthly_revenue=monthly_revenue[-6:],  # ostatnie 6 miesięcy
+                           top_clients=top_clients,
+                           total_paid=float(total_paid),
+                           total_pending=float(total_pending))
+
 
 @dashboard_bp.route('/invoices')
 @login_required
