@@ -1,4 +1,4 @@
-#!/home/kuba/InvoiceXClaude/venv/bin/python3
+#!/home/kuba/InvoiceXClaude/venv/bin/python3.12
 
 ##############################################################################
 #

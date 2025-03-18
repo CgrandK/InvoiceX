@@ -1,132 +1,209 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-6">
-        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-        <p class="text-muted">Witaj, {{ current_user.first_name }}! Oto podsumowanie Twoich faktur</p>
-    </div>
-    <div class="col-md-6 text-md-end">
-        <a href="{{ url_for('invoice.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus-circle me-1"></i>Nowa faktura
-        </a>
-    </div>
-</div>
-
-<!-- Statystyki -->
-<div class="row mb-4">
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Wszystkie faktury</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_invoices }}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-file-invoice fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
+<!-- Główny nagłówek z animowanym tłem -->
+<div class="dashboard-header position-relative overflow-hidden mb-5 p-4 rounded-4 shadow-lg" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTI4MCAxNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMCAwaDE5MjB2ODBIMHoiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4xKSIgZmlsbC1vcGFjaXR5PSIuMSIvPjwvZz48L3N2Zz4='); background-size: 100% 100%; opacity: 0.1;"></div>
+    <div class="row align-items-center position-relative z-index-1">
+        <div class="col-lg-8">
+            <h1 class="display-5 fw-bold text-white mb-0">
+                <span class="welcome-text">Witaj, {{ current_user.first_name }}!</span>
+            </h1>
+            <p class="lead text-white-50 mb-0 mt-2">Zarządzaj swoimi finansami z łatwością</p>
         </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Opłacone faktury</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ paid_invoices }}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            Oczekujące faktury</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_invoices }}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-clock fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-danger shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                            Przeterminowane faktury</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ overdue_invoices }}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-exclamation-circle fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
+        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+            <a href="{{ url_for('invoice.create') }}" class="btn btn-light btn-lg px-4 shadow-sm hover-lift">
+                <i class="fas fa-plus-circle me-2"></i>Wystaw fakturę
+            </a>
         </div>
     </div>
 </div>
 
-<div class="row">
+<!-- Interaktywne karty statystyk -->
+<div class="row g-4 mb-5">
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 hover-lift overflow-hidden h-100">
+            <div class="card-body position-relative p-4">
+                <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; right: -15px; top: -15px; background: rgba(66, 99, 235, 0.1);">
+                    <i class="fas fa-file-invoice fa-lg text-primary"></i>
+                </div>
+                <span class="d-block text-uppercase fw-semibold text-primary mb-2" style="font-size: 0.8rem;">Wszystkie faktury</span>
+                <h2 class="display-5 fw-bold mb-0 counter-value">{{ total_invoices }}</h2>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-primary" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 hover-lift overflow-hidden h-100">
+            <div class="card-body position-relative p-4">
+                <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; right: -15px; top: -15px; background: rgba(25, 135, 84, 0.1);">
+                    <i class="fas fa-check-circle fa-lg text-success"></i>
+                </div>
+                <span class="d-block text-uppercase fw-semibold text-success mb-2" style="font-size: 0.8rem;">Opłacone faktury</span>
+                <h2 class="display-5 fw-bold mb-0 counter-value">{{ paid_invoices }}</h2>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-success" style="width: {{ 100 * paid_invoices / total_invoices if total_invoices > 0 else 0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 hover-lift overflow-hidden h-100">
+            <div class="card-body position-relative p-4">
+                <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; right: -15px; top: -15px; background: rgba(255, 193, 7, 0.1);">
+                    <i class="fas fa-clock fa-lg text-warning"></i>
+                </div>
+                <span class="d-block text-uppercase fw-semibold text-warning mb-2" style="font-size: 0.8rem;">Oczekujące faktury</span>
+                <h2 class="display-5 fw-bold mb-0 counter-value">{{ pending_invoices }}</h2>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-warning" style="width: {{ 100 * pending_invoices / total_invoices if total_invoices > 0 else 0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 hover-lift overflow-hidden h-100">
+            <div class="card-body position-relative p-4">
+                <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; right: -15px; top: -15px; background: rgba(220, 53, 69, 0.1);">
+                    <i class="fas fa-exclamation-circle fa-lg text-danger"></i>
+                </div>
+                <span class="d-block text-uppercase fw-semibold text-danger mb-2" style="font-size: 0.8rem;">Przeterminowane</span>
+                <h2 class="display-5 fw-bold mb-0 counter-value">{{ overdue_invoices }}</h2>
+                <div class="progress mt-3" style="height: 4px;">
+                    <div class="progress-bar bg-danger" style="width: {{ 100 * overdue_invoices / total_invoices if total_invoices > 0 else 0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Wykres przychodów miesięcznych -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 h-100">
+            <div class="card-header border-0 bg-white p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-chart-bar text-primary me-2"></i>Przychód miesięczny
+                    </h5>
+                    <div class="chart-actions">
+                        <button class="btn btn-sm btn-light border-0" id="chartView" data-view="bar">
+                            <i class="fas fa-chart-column"></i>
+                        </button>
+                        <button class="btn btn-sm btn-light border-0" id="chartViewLine" data-view="line">
+                            <i class="fas fa-chart-line"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4 pt-0">
+                <div class="chart-container" style="position: relative; height: 300px;">
+                    <canvas id="monthlyRevenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Podsumowanie płatności -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 h-100">
+            <div class="card-header border-0 bg-white p-4">
+                <h5 class="fw-bold mb-0">
+                    <i class="fas fa-wallet text-primary me-2"></i>Podsumowanie płatności
+                </h5>
+            </div>
+            <div class="card-body p-4 pt-0">
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-semibold mb-0 text-success">
+                            <i class="fas fa-circle fa-xs me-1"></i>Opłacone
+                        </h6>
+                        <span class="fw-bold text-success">{{ "%.2f"|format(total_paid) }} zł</span>
+                    </div>
+                    <div class="progress rounded-pill" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ 100 * total_paid / (total_paid + total_pending) if total_paid + total_pending > 0 else 0 }}%"></div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-semibold mb-0 text-warning">
+                            <i class="fas fa-circle fa-xs me-1"></i>Oczekujące
+                        </h6>
+                        <span class="fw-bold text-warning">{{ "%.2f"|format(total_pending) }} zł</span>
+                    </div>
+                    <div class="progress rounded-pill" style="height: 8px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ 100 * total_pending / (total_paid + total_pending) if total_paid + total_pending > 0 else 0 }}%"></div>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('reports.index') }}" class="btn btn-primary w-100 rounded-pill hover-lift">
+                        <i class="fas fa-chart-bar me-2"></i>Szczegółowe raporty
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
     <!-- Ostatnie faktury -->
-    <div class="col-lg-6 mb-4">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Ostatnie faktury</h6>
-                <a href="{{ url_for('dashboard.invoices') }}" class="btn btn-sm btn-primary">
-                    Zobacz wszystkie
-                </a>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-white p-4 border-0">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-history text-primary me-2"></i>Ostatnie faktury
+                    </h5>
+                    <a href="{{ url_for('dashboard.invoices') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                        Zobacz wszystkie
+                    </a>
+                </div>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 {% if recent_invoices %}
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover">
-                        <thead>
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
                             <tr>
-                                <th>Numer</th>
-                                <th>Klient</th>
-                                <th>Kwota</th>
-                                <th>Status</th>
+                                <th class="border-0 ps-4">Numer</th>
+                                <th class="border-0">Klient</th>
+                                <th class="border-0">Kwota</th>
+                                <th class="border-0 pe-4">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for invoice in recent_invoices %}
                             <tr>
-                                <td>
-                                    <a href="{{ url_for('invoice.view', invoice_id=invoice.id) }}">
+                                <td class="ps-4">
+                                    <a href="{{ url_for('invoice.view', invoice_id=invoice.id) }}" class="fw-semibold text-decoration-none">
                                         {{ invoice.invoice_number }}
                                     </a>
                                 </td>
-                                <td>{{ invoice.client.name }}</td>
-                                <td>{{ "%.2f"|format(invoice.total) }} zł</td>
                                 <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-light text-primary me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border-radius: 50%;">
+                                            {{ invoice.client.name[:1] }}
+                                        </div>
+                                        <span>{{ invoice.client.name }}</span>
+                                    </div>
+                                </td>
+                                <td class="fw-semibold">{{ "%.2f"|format(invoice.total) }} zł</td>
+                                <td class="pe-4">
                                     {% if invoice.status == 'paid' %}
-                                    <span class="badge bg-success">Opłacona</span>
+                                    <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2">Opłacona</span>
                                     {% elif invoice.status == 'pending' %}
-                                    <span class="badge bg-warning">Oczekująca</span>
+                                    <span class="badge rounded-pill bg-warning-subtle text-warning px-3 py-2">Oczekująca</span>
                                     {% elif invoice.status == 'overdue' %}
-                                    <span class="badge bg-danger">Przeterminowana</span>
+                                    <span class="badge rounded-pill bg-danger-subtle text-danger px-3 py-2">Przeterminowana</span>
                                     {% elif invoice.status == 'draft' %}
-                                    <span class="badge bg-secondary">Szkic</span>
+                                    <span class="badge rounded-pill bg-secondary-subtle text-secondary px-3 py-2">Szkic</span>
                                     {% elif invoice.status == 'canceled' %}
-                                    <span class="badge bg-dark">Anulowana</span>
+                                    <span class="badge rounded-pill bg-dark-subtle text-dark px-3 py-2">Anulowana</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -135,96 +212,69 @@
                     </table>
                 </div>
                 {% else %}
-                <p class="text-center my-3">Brak faktur. Utwórz swoją pierwszą fakturę!</p>
+                <div class="text-center p-5">
+                    <img src="/api/placeholder/240/140" alt="Brak faktur" class="mb-3 img-fluid" style="max-width: 150px; opacity: 0.5;">
+                    <p class="mb-0 text-muted">Brak faktur. Utwórz swoją pierwszą fakturę!</p>
+                </div>
                 {% endif %}
             </div>
         </div>
     </div>
 
     <!-- Faktury z bliskim terminem płatności -->
-    <div class="col-lg-6 mb-4">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Zbliżające się terminy płatności</h6>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-white p-4 border-0">
+                <h5 class="fw-bold mb-0">
+                    <i class="fas fa-calendar-alt text-primary me-2"></i>Zbliżające się terminy płatności
+                </h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 {% if upcoming_invoices %}
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover">
-                        <thead>
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
                             <tr>
-                                <th>Numer</th>
-                                <th>Klient</th>
-                                <th>Termin płatności</th>
-                                <th>Kwota</th>
+                                <th class="border-0 ps-4">Numer</th>
+                                <th class="border-0">Klient</th>
+                                <th class="border-0">Termin</th>
+                                <th class="border-0 pe-4">Kwota</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for invoice in upcoming_invoices %}
                             <tr>
-                                <td>
-                                    <a href="{{ url_for('invoice.view', invoice_id=invoice.id) }}">
+                                <td class="ps-4">
+                                    <a href="{{ url_for('invoice.view', invoice_id=invoice.id) }}" class="fw-semibold text-decoration-none">
                                         {{ invoice.invoice_number }}
                                     </a>
                                 </td>
-                                <td>{{ invoice.client.name }}</td>
-                                <td>{{ invoice.due_date.strftime('%d.%m.%Y') }}</td>
-                                <td>{{ "%.2f"|format(invoice.total) }} zł</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-light text-primary me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border-radius: 50%;">
+                                            {{ invoice.client.name[:1] }}
+                                        </div>
+                                        <span>{{ invoice.client.name }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="d-flex align-items-center">
+                                        <i class="fas fa-calendar-day text-muted me-2"></i>
+                                        {{ invoice.due_date.strftime('%d.%m.%Y') }}
+                                    </span>
+                                </td>
+                                <td class="pe-4 fw-semibold">{{ "%.2f"|format(invoice.total) }} zł</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
                 {% else %}
-                <p class="text-center my-3">Brak faktur z bliskim terminem płatności.</p>
+                <div class="text-center p-5">
+                    <img src="/api/placeholder/240/140" alt="Brak zbliżających się płatności" class="mb-3 img-fluid" style="max-width: 150px; opacity: 0.5;">
+                    <p class="mb-0 text-muted">Brak faktur z bliskim terminem płatności.</p>
+                </div>
                 {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Podsumowanie finansowe -->
-<div class="row">
-    <div class="col-lg-8 mb-4">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Przychód miesięczny</h6>
-            </div>
-            <div class="card-body">
-                <div class="chart-area">
-                    <canvas id="monthlyRevenueChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-4 mb-4">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Podsumowanie płatności</h6>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <h4 class="small font-weight-bold">
-                        Opłacone <span class="float-end">{{ "%.2f"|format(total_paid) }} zł</span>
-                    </h4>
-                    <div class="progress mb-4">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ 100 * total_paid / (total_paid + total_pending) if total_paid + total_pending > 0 else 0 }}%"></div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <h4 class="small font-weight-bold">
-                        Oczekujące <span class="float-end">{{ "%.2f"|format(total_pending) }} zł</span>
-                    </h4>
-                    <div class="progress mb-4">
-                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ 100 * total_pending / (total_paid + total_pending) if total_paid + total_pending > 0 else 0 }}%"></div>
-                    </div>
-                </div>
-                <div class="text-center mt-4">
-                    <a href="{{ url_for('reports.index') }}" class="btn btn-primary">
-                        <i class="fas fa-chart-bar me-1"></i>Szczegółowe raporty
-                    </a>
-                </div>
             </div>
         </div>
     </div>
@@ -235,6 +285,38 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Efekty animacji przy ładowaniu strony
+        document.querySelectorAll('.hover-lift').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                el.style.transform = 'translateY(-5px)';
+                el.style.transition = 'transform 0.3s ease';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Animacja liczników
+        document.querySelectorAll('.counter-value').forEach(counter => {
+            const target = parseInt(counter.innerText);
+            let count = 0;
+            const duration = 1500;
+            const frameDuration = 1000/60;
+            const totalFrames = Math.round(duration / frameDuration);
+            const counterAnimation = setInterval(() => {
+                count++;
+                const progress = count / totalFrames;
+                const currentCount = Math.round(progress * target);
+                
+                if (count === totalFrames) {
+                    clearInterval(counterAnimation);
+                    counter.innerText = target;
+                } else {
+                    counter.innerText = currentCount;
+                }
+            }, frameDuration);
+        });
+
         // Dane dla wykresu
         const monthlyData = {{ monthly_revenue|tojson }};
         
@@ -242,18 +324,30 @@
         const labels = monthlyData.map(m => m.month);
         const values = monthlyData.map(m => m.total);
         
-        // Skonfiguruj wykres
+        // Gradient dla wykresu
         const ctx = document.getElementById('monthlyRevenueChart').getContext('2d');
-        const myChart = new Chart(ctx, {
-            type: 'bar',
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(78, 115, 223, 0.6)');
+        gradient.addColorStop(1, 'rgba(78, 115, 223, 0.05)');
+        
+        // Skonfiguruj wykres
+        let chartType = 'bar';
+        const chartConfig = {
+            type: chartType,
             data: {
                 labels: labels,
                 datasets: [{
                     label: 'Przychód (PLN)',
                     data: values,
-                    backgroundColor: 'rgba(78, 115, 223, 0.5)',
+                    backgroundColor: gradient,
                     borderColor: 'rgba(78, 115, 223, 1)',
-                    borderWidth: 1
+                    borderWidth: 2,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: 'rgba(78, 115, 223, 1)',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    tension: 0.3,
+                    fill: 'start'
                 }]
             },
             options: {
@@ -262,15 +356,49 @@
                 scales: {
                     y: {
                         beginAtZero: true,
+                        grid: {
+                            borderDash: [4, 4],
+                            drawBorder: false
+                        },
                         ticks: {
+                            padding: 10,
+                            color: '#777',
+                            font: {
+                                size: 11
+                            },
                             callback: function(value) {
                                 return value.toLocaleString() + ' zł';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            padding: 10,
+                            color: '#777',
+                            font: {
+                                size: 11
                             }
                         }
                     }
                 },
                 plugins: {
+                    legend: {
+                        display: false
+                    },
                     tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        padding: 12,
+                        cornerRadius: 8,
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
                         callbacks: {
                             label: function(context) {
                                 let label = context.dataset.label || '';
@@ -284,6 +412,21 @@
                     }
                 }
             }
+        };
+        
+        const myChart = new Chart(ctx, chartConfig);
+        
+        // Przełączanie typu wykresu
+        document.getElementById('chartView').addEventListener('click', function() {
+            myChart.config.type = 'bar';
+            myChart.data.datasets[0].fill = false;
+            myChart.update();
+        });
+        
+        document.getElementById('chartViewLine').addEventListener('click', function() {
+            myChart.config.type = 'line';
+            myChart.data.datasets[0].fill = 'start';
+            myChart.update();
         });
     });
 </script>

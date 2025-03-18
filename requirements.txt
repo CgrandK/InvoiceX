@@ -11,7 +11,6 @@ reportlab==4.0.8
 python-dotenv==1.0.0
 Werkzeug==2.3.7
 gunicorn==21.2.0
-Pillow==10.2.0
 pandas==2.1.4
 xlsxwriter==3.1.9
 stripe==7.5.0
