@@ -1,72 +1,185 @@
-<!-- app/templates/contact/form.html -->
 {% extends "layout.html" %}
 
 {% block content %}
 <div class="container py-4">
-  <div class="card">
-    <div class="card-header">
-      <h3>{{ title }}</h3>
+  <!-- Nagłówek strony -->
+  <div class="position-relative overflow-hidden mb-5 p-4 rounded-4 shadow-lg" style="background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTI4MCAxNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMCAwaDE5MjB2ODBIMHoiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4xKSIgZmlsbC1vcGFjaXR5PSIuMSIvPjwvZz48L3N2Zz4='); background-size: 100% 100%; opacity: 0.1;"></div>
+    <div class="row align-items-center position-relative z-index-1">
+      <div class="col-lg-8">
+        <h1 class="display-5 fw-bold text-white mb-0">
+          <i class="fas {% if title == 'Nowy kontakt' %}fa-user-plus{% else %}fa-user-edit{% endif %} me-2"></i>{{ title }}
+        </h1>
+        <p class="lead text-white-50 mb-0 mt-2">
+          {% if title == 'Nowy kontakt' %}
+            Dodaj nowy kontakt, aby śledzić pożyczki i spłaty
+          {% else %}
+            Aktualizuj dane kontaktu i notatki
+          {% endif %}
+        </p>
+      </div>
     </div>
-    <div class="card-body">
-      <form method="post">
-        {{ form.hidden_tag() }}
+  </div>
 
-        <div class="mb-3">
-          {{ form.name.label(class="form-label") }}
-          {{ form.name(class="form-control") }}
-          {% if form.name.errors %}
-            <div class="text-danger">
-              {% for error in form.name.errors %}
-                <small>{{ error }}</small>
-              {% endfor %}
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-4">
+          <form method="post" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Nazwa -->
+            <div class="mb-4 form-group">
+              <label for="{{ form.name.id }}" class="form-label fw-semibold">{{ form.name.label }} <span class="text-danger">*</span></label>
+              {{ form.name(class="form-control form-control-lg" + (" is-invalid" if form.name.errors else ""), placeholder="Wpisz nazwę kontaktu...") }}
+              {% if form.name.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.name.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
-          {% endif %}
-        </div>
 
-        <div class="mb-3">
-          {{ form.email.label(class="form-label") }}
-          {{ form.email(class="form-control", type="email") }}
-          {% if form.email.errors %}
-            <div class="text-danger">
-              {% for error in form.email.errors %}
-                <small>{{ error }}</small>
-              {% endfor %}
+            <!-- Email -->
+            <div class="mb-4 form-group">
+              <label for="{{ form.email.id }}" class="form-label fw-semibold">{{ form.email.label }}</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-0">
+                  <i class="fas fa-envelope text-muted"></i>
+                </span>
+                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), type="email", placeholder="Adres email kontaktu...") }}
+              </div>
+              {% if form.email.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.email.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="form-text">
+                  <small class="text-muted">Opcjonalnie - adres email kontaktu</small>
+                </div>
+              {% endif %}
             </div>
-          {% endif %}
-        </div>
 
-        <div class="mb-3">
-          {{ form.phone.label(class="form-label") }}
-          {{ form.phone(class="form-control") }}
-          {% if form.phone.errors %}
-            <div class="text-danger">
-              {% for error in form.phone.errors %}
-                <small>{{ error }}</small>
-              {% endfor %}
+            <!-- Telefon -->
+            <div class="mb-4 form-group">
+              <label for="{{ form.phone.id }}" class="form-label fw-semibold">{{ form.phone.label }}</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-0">
+                  <i class="fas fa-phone text-muted"></i>
+                </span>
+                {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="Numer telefonu...") }}
+              </div>
+              {% if form.phone.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.phone.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="form-text">
+                  <small class="text-muted">Opcjonalnie - numer telefonu kontaktu</small>
+                </div>
+              {% endif %}
             </div>
-          {% endif %}
-        </div>
 
-        <div class="mb-3">
-          {{ form.notes.label(class="form-label") }}
-          {{ form.notes(class="form-control", rows=3) }}
-          {% if form.notes.errors %}
-            <div class="text-danger">
-              {% for error in form.notes.errors %}
-                <small>{{ error }}</small>
-              {% endfor %}
+            <!-- Notatki -->
+            <div class="mb-4 form-group">
+              <label for="{{ form.notes.id }}" class="form-label fw-semibold">{{ form.notes.label }}</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-0">
+                  <i class="fas fa-sticky-note text-muted"></i>
+                </span>
+                {{ form.notes(class="form-control" + (" is-invalid" if form.notes.errors else ""), rows=4, placeholder="Dodatkowe informacje o kontakcie...") }}
+              </div>
+              {% if form.notes.errors %}
+                <div class="invalid-feedback d-block">
+                  {% for error in form.notes.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="form-text">
+                  <small class="text-muted">Opcjonalnie - dodatkowe informacje, notatki</small>
+                </div>
+              {% endif %}
             </div>
-          {% endif %}
-        </div>
 
-        <div class="d-flex justify-content-between">
-          <a href="{{ url_for('contact.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Powrót
-          </a>
-          {{ form.submit(class="btn btn-primary") }}
+            <!-- Przyciski -->
+            <div class="d-flex justify-content-between">
+              <a href="{{ url_for('contact.index') }}" class="btn btn-light rounded-pill px-4 hover-lift">
+                <i class="fas fa-arrow-left me-2"></i> Anuluj
+              </a>
+              {{ form.submit(class="btn btn-primary rounded-pill px-4 py-2 hover-lift shadow-sm") }}
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
+      
+      <!-- Podpowiedź dotycząca transakcji -->
+      {% if title == 'Nowy kontakt' %}
+      <div class="card border-0 shadow-sm rounded-4 mt-4 bg-light">
+        <div class="card-body p-4">
+          <div class="d-flex">
+            <div class="text-center me-4">
+              <div class="bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+                <i class="fas fa-lightbulb text-primary fa-lg"></i>
+              </div>
+            </div>
+            <div>
+              <h5 class="fw-bold">Co dalej?</h5>
+              <p class="mb-0">Po zapisaniu kontaktu będziesz mógł dodać pierwszą transakcję (pożyczkę lub spłatę) i rozpocząć śledzenie salda.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Animacja pól formularza przy wczytywaniu
+    const formElements = document.querySelectorAll('form .mb-4');
+    formElements.forEach((element, index) => {
+      element.style.opacity = '0';
+      element.style.transform = 'translateY(20px)';
+      element.style.transition = 'all 0.3s ease';
+      
+      setTimeout(() => {
+        element.style.opacity = '1';
+        element.style.transform = 'translateY(0)';
+      }, 100 + (index * 100));
+    });
+    
+    // Efekt hover dla przycisków
+    document.querySelectorAll('.hover-lift').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        el.style.transform = 'translateY(-5px)';
+        el.style.transition = 'transform 0.3s ease';
+      });
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = 'translateY(0)';
+      });
+    });
+    
+    // Ustawienie focusu na pierwsze pole
+    document.querySelector('form .form-control').focus();
+    
+    // Walidacja formularza przy submit
+    const form = document.querySelector('form.needs-validation');
+    form.addEventListener('submit', function(event) {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    });
+  });
+</script>
 {% endblock %}

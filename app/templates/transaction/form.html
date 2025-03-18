@@ -1,81 +1,299 @@
-<!-- app/templates/transaction/form.html -->
 {% extends "layout.html" %}
 
 {% block content %}
 <div class="container py-4">
-  <div class="card">
-    <div class="card-header">
-      <h3>{{ title }} z {{ contact.name }}</h3>
-    </div>
-    <div class="card-body">
-      <form method="post">
-        {{ form.hidden_tag() }}
-
-        <div class="mb-3">
-          {{ form.amount.label(class="form-label") }}
-          <div class="input-group">
-            {{ form.amount(class="form-control", step="0.01", min="0.01", placeholder="0.00") }}
-            <span class="input-group-text">PLN</span>
+  <!-- Nagłówek strony -->
+  <div class="position-relative overflow-hidden mb-5 p-4 rounded-4 shadow-lg" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTI4MCAxNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMCAwaDE5MjB2ODBIMHoiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4xKSIgZmlsbC1vcGFjaXR5PSIuMSIvPjwvZz48L3N2Zz4='); background-size: 100% 100%; opacity: 0.1;"></div>
+    <div class="row align-items-center position-relative z-index-1">
+      <div class="col-lg-8">
+        <h1 class="display-5 fw-bold text-white mb-0">
+          <i class="fas fa-exchange-alt me-2"></i>{{ title }}
+        </h1>
+        <p class="lead text-white-50 mb-0 mt-2">
+          Kontakt: <span class="text-white">{{ contact.name }}</span>
+        </p>
+      </div>
+      <div class="col-lg-4 text-lg-end mt-3 mt-lg-0 d-flex align-items-center justify-content-lg-end">
+        <div class="avatar-circle bg-white text-primary me-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; border-radius: 50%; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+          {{ contact.name[:1] }}
+        </div>
+        <div class="text-white text-start">
+          <div class="fw-semibold">Aktualne saldo</div>
+          <div class="fs-5 fw-bold">
+            {{ contact.get_balance()|abs|round(2) }} PLN
+            {% if contact.get_balance() > 0 %}
+              <i class="fas fa-arrow-right ms-1 text-success"></i>
+            {% elif contact.get_balance() < 0 %}
+              <i class="fas fa-arrow-left ms-1 text-danger"></i>
+            {% endif %}
           </div>
-          {% if form.amount.errors %}
-            <div class="text-danger">
-              {% for error in form.amount.errors %}
-                <small>{{ error }}</small>
-              {% endfor %}
-            </div>
-          {% endif %}
         </div>
+      </div>
+    </div>
+  </div>
 
-        <div class="mb-3">
-          {{ form.transaction_type.label(class="form-label") }}
-          {{ form.transaction_type(class="form-select") }}
-          {% if form.transaction_type.errors %}
-            <div class="text-danger">
-              {% for error in form.transaction_type.errors %}
-                <small>{{ error }}</small>
-              {% endfor %}
-            </div>
-          {% endif %}
-          <small class="form-text text-muted mt-1">
-            <ul class="mb-0 ps-3">
-              <li><strong>Pożyczyłem</strong> - kwota, którą pożyczyłeś tej osobie (zwiększa saldo do odzyskania)</li>
-              <li><strong>Oddał mi</strong> - kwota, którą ta osoba oddała Tobie (zmniejsza saldo do odzyskania)</li>
-            </ul>
-          </small>
-        </div>
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-4">
+          <form method="post">
+            {{ form.hidden_tag() }}
 
-        <div class="mb-3">
-          {{ form.description.label(class="form-label") }}
-          {{ form.description(class="form-control", rows=2, placeholder="Opcjonalny opis transakcji...") }}
-          {% if form.description.errors %}
-            <div class="text-danger">
-              {% for error in form.description.errors %}
-                <small>{{ error }}</small>
-              {% endfor %}
+            <!-- Typ transakcji -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">{{ form.transaction_type.label }}</label>
+              <div class="row g-3">
+                {% for value, label in form.transaction_type.choices %}
+                <div class="col-md-3 col-6">
+                  <div class="form-check transaction-type-card">
+                    <input class="form-check-input" type="radio" name="{{ form.transaction_type.name }}" 
+                           id="transaction_type_{{ value }}" value="{{ value }}" 
+                           {% if form.transaction_type.data == value %}checked{% endif %}>
+                    <label class="form-check-label transaction-type-label rounded-4 p-3 text-center w-100" 
+                           for="transaction_type_{{ value }}">
+                      {% if value == 1 %} <!-- LENT_TO -->
+                      <div class="transaction-icon-bg d-inline-block rounded-circle mb-2" style="width: 48px; height: 48px; line-height: 48px; background: rgba(25, 135, 84, 0.1);">
+                        <i class="fas fa-arrow-right text-primary"></i>
+                      </div>
+                      <div class="fw-semibold">Pożyczyłem</div>
+                      {% elif value == 2 %} <!-- BORROWED_FROM -->
+                      <div class="transaction-icon-bg d-inline-block rounded-circle mb-2" style="width: 48px; height: 48px; line-height: 48px; background: rgba(13, 110, 253, 0.1);">
+                        <i class="fas fa-arrow-left text-info"></i>
+                      </div>
+                      <div class="fw-semibold">Pożyczył mi</div>
+                      {% elif value == 3 %} <!-- RECEIVED_FROM -->
+                      <div class="transaction-icon-bg d-inline-block rounded-circle mb-2" style="width: 48px; height: 48px; line-height: 48px; background: rgba(25, 135, 84, 0.1);">
+                        <i class="fas fa-arrow-left text-success"></i>
+                      </div>
+                      <div class="fw-semibold">Oddał mi</div>
+                      {% elif value == 4 %} <!-- REPAID_TO -->
+                      <div class="transaction-icon-bg d-inline-block rounded-circle mb-2" style="width: 48px; height: 48px; line-height: 48px; background: rgba(220, 53, 69, 0.1);">
+                        <i class="fas fa-arrow-right text-danger"></i>
+                      </div>
+                      <div class="fw-semibold">Oddałem</div>
+                      {% endif %}
+                    </label>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% if form.transaction_type.errors %}
+                <div class="text-danger mt-2">
+                  {% for error in form.transaction_type.errors %}
+                    <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
-          {% endif %}
-        </div>
 
-        <div class="mb-3">
-          {{ form.date.label(class="form-label") }}
-          {{ form.date(class="form-control", type="date") }}
-          {% if form.date.errors %}
-            <div class="text-danger">
-              {% for error in form.date.errors %}
-                <small>{{ error }}</small>
-              {% endfor %}
+            <!-- Kwota -->
+            <div class="mb-4">
+              <label for="{{ form.amount.id }}" class="form-label fw-semibold">{{ form.amount.label }}</label>
+              <div class="input-group">
+                {{ form.amount(class="form-control form-control-lg", step="0.01", min="0.01", placeholder="0.00") }}
+                <span class="input-group-text">PLN</span>
+              </div>
+              {% if form.amount.errors %}
+                <div class="text-danger">
+                  {% for error in form.amount.errors %}
+                    <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+              {% endif %}
             </div>
-          {% endif %}
-        </div>
 
-        <div class="d-flex justify-content-between">
-          <a href="{{ url_for('contact.view', id=contact.id) }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Powrót
-          </a>
-          {{ form.submit(class="btn btn-primary") }}
+            <!-- Data -->
+            <div class="mb-4">
+              <label for="{{ form.date.id }}" class="form-label fw-semibold">{{ form.date.label }}</label>
+              {{ form.date(class="form-control", type="date") }}
+              {% if form.date.errors %}
+                <div class="text-danger">
+                  {% for error in form.date.errors %}
+                    <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- Opis -->
+            <div class="mb-4">
+              <label for="{{ form.description.id }}" class="form-label fw-semibold">{{ form.description.label }}</label>
+              {{ form.description(class="form-control", rows=3, placeholder="Opcjonalny opis transakcji...") }}
+              {% if form.description.errors %}
+                <div class="text-danger">
+                  {% for error in form.description.errors %}
+                    <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- Objaśnienie typów transakcji -->
+            <div class="mb-4">
+              <div class="card border-0 bg-light rounded-4">
+                <div class="card-body">
+                  <h6 class="fw-bold mb-3">
+                    <i class="fas fa-info-circle text-primary me-2"></i>Jak działają typy transakcji?
+                  </h6>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <div class="d-flex">
+                        <div class="transaction-icon-bg d-flex align-items-center justify-content-center rounded-circle me-2 flex-shrink-0" style="width: 32px; height: 32px; background: rgba(25, 135, 84, 0.1);">
+                          <i class="fas fa-arrow-right text-primary"></i>
+                        </div>
+                        <div>
+                          <p class="mb-0 fw-medium">Pożyczyłem</p>
+                          <p class="text-muted small mb-0">Zwiększa saldo do odzyskania</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="d-flex">
+                        <div class="transaction-icon-bg d-flex align-items-center justify-content-center rounded-circle me-2 flex-shrink-0" style="width: 32px; height: 32px; background: rgba(13, 110, 253, 0.1);">
+                          <i class="fas fa-arrow-left text-info"></i>
+                        </div>
+                        <div>
+                          <p class="mb-0 fw-medium">Pożyczył mi</p>
+                          <p class="text-muted small mb-0">Zwiększa Twój dług</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="d-flex">
+                        <div class="transaction-icon-bg d-flex align-items-center justify-content-center rounded-circle me-2 flex-shrink-0" style="width: 32px; height: 32px; background: rgba(25, 135, 84, 0.1);">
+                          <i class="fas fa-arrow-left text-success"></i>
+                        </div>
+                        <div>
+                          <p class="mb-0 fw-medium">Oddał mi</p>
+                          <p class="text-muted small mb-0">Zmniejsza saldo do odzyskania</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="d-flex">
+                        <div class="transaction-icon-bg d-flex align-items-center justify-content-center rounded-circle me-2 flex-shrink-0" style="width: 32px; height: 32px; background: rgba(220, 53, 69, 0.1);">
+                          <i class="fas fa-arrow-right text-danger"></i>
+                        </div>
+                        <div>
+                          <p class="mb-0 fw-medium">Oddałem</p>
+                          <p class="text-muted small mb-0">Zmniejsza Twój dług</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Przyciski -->
+            <div class="d-flex justify-content-between">
+              <a href="{{ url_for('contact.view', id=contact.id) }}" class="btn btn-light rounded-pill px-4 hover-lift">
+                <i class="fas fa-arrow-left me-2"></i> Anuluj
+              </a>
+              {{ form.submit(class="btn btn-primary rounded-pill px-4 hover-lift shadow-sm") }}
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block styles %}
+<style>
+  .transaction-type-card {
+    margin-bottom: 0;
+    height: 100%;
+  }
+  
+  .transaction-type-label {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    background-color: white;
+  }
+  
+  .transaction-type-label:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  }
+  
+  .form-check-input {
+    display: none;
+  }
+  
+  .form-check-input:checked + .transaction-type-label {
+    border-color: #4e73df;
+    background-color: rgba(78, 115, 223, 0.05);
+    box-shadow: 0 5px 15px rgba(78, 115, 223, 0.1);
+  }
+  
+  .hover-lift {
+    transition: transform 0.3s ease;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-5px);
+  }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Animacja pól formularza przy wczytywaniu
+    const formElements = document.querySelectorAll('form .mb-4');
+    formElements.forEach((element, index) => {
+      element.style.opacity = '0';
+      element.style.transform = 'translateY(20px)';
+      element.style.transition = 'all 0.3s ease';
+      
+      setTimeout(() => {
+        element.style.opacity = '1';
+        element.style.transform = 'translateY(0)';
+      }, 100 + (index * 100));
+    });
+    
+    // Ustawienie bieżącej daty, jeśli pole jest puste
+    const dateField = document.querySelector('input[type="date"]');
+    if (dateField && !dateField.value) {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      dateField.value = `${year}-${month}-${day}`;
+    }
+    
+    // Formatowanie kwoty
+    const amountField = document.querySelector('input[name="amount"]');
+    if (amountField) {
+      amountField.addEventListener('blur', function() {
+        if (this.value) {
+          const num = parseFloat(this.value);
+          if (!isNaN(num)) {
+            this.value = num.toFixed(2);
+          }
+        }
+      });
+    }
+    
+    // Efekt hover dla przycisków
+    document.querySelectorAll('.hover-lift').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        el.style.transform = 'translateY(-5px)';
+      });
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = 'translateY(0)';
+      });
+    });
+  });
+</script>
 {% endblock %}

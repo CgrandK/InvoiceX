@@ -1,103 +1,343 @@
-<!-- app/templates/contact/index.html -->
 {% extends "layout.html" %}
 
 {% block content %}
 <div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Moje kontakty</h2>
-    <a href="{{ url_for('contact.new') }}" class="btn btn-primary">
-      <i class="fas fa-plus"></i> Dodaj kontakt
-    </a>
-  </div>
-
-  {% if contacts %}
-  <div class="card">
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>Nazwa</th>
-              <th>Email</th>
-              <th>Telefon</th>
-              <th class="text-end">Saldo</th>
-              <th class="text-end">Akcje</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for contact in contacts %}
-            <tr>
-              <td>
-                <a href="{{ url_for('contact.view', id=contact.id) }}">{{ contact.name }}</a>
-              </td>
-              <td>{{ contact.email or '-' }}</td>
-              <td>{{ contact.phone or '-' }}</td>
-              <td class="text-end">
-                <span class="badge {% if contact.balance > 0 %}bg-success{% elif contact.balance < 0 %}bg-danger{% else %}bg-secondary{% endif %}">
-                  {{ contact.balance|abs|round(2) }} PLN
-                  {% if contact.balance > 0 %}
-                    <i class="fas fa-arrow-right"></i> Do odzyskania
-                  {% elif contact.balance < 0 %}
-                    <i class="fas fa-arrow-left"></i> Do oddania
-                  {% else %}
-                    <i class="fas fa-equals"></i> Rozliczone
-                  {% endif %}
-                </span>
-              </td>
-              <td class="text-end">
-                <div class="btn-group" role="group">
-                  <a href="{{ url_for('transaction.new', contact_id=contact.id) }}" class="btn btn-sm btn-outline-primary" title="Dodaj transakcję">
-                    <i class="fas fa-money-bill-wave"></i>
-                  </a>
-                  <a href="{{ url_for('contact.view', id=contact.id) }}" class="btn btn-sm btn-outline-secondary" title="Szczegóły">
-                    <i class="fas fa-eye"></i>
-                  </a>
-                  <a href="{{ url_for('contact.edit', id=contact.id) }}" class="btn btn-sm btn-outline-secondary" title="Edytuj">
-                    <i class="fas fa-edit"></i>
-                  </a>
-                  <button type="button" class="btn btn-sm btn-outline-danger" title="Usuń" data-bs-toggle="modal" data-bs-target="#deleteModal{{ contact.id }}">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-
-                <!-- Modal usunięcia -->
-                <div class="modal fade" id="deleteModal{{ contact.id }}" tabindex="-1" aria-hidden="true">
-                  <div class="modal-dialog">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5 class="modal-title">Usuń kontakt</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <div class="modal-body">
-                        <p>Czy na pewno chcesz usunąć kontakt <strong>{{ contact.name }}</strong>?</p>
-                        {% if contact.balance != 0 %}
-                        <p class="text-danger">
-                          <i class="fas fa-exclamation-triangle"></i> 
-                          Uwaga: Ten kontakt ma nierozliczone saldo: {{ contact.balance|round(2) }} PLN
-                        </p>
-                        {% endif %}
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
-                        <form action="{{ url_for('contact.delete', id=contact.id) }}" method="post">
-                          <button type="submit" class="btn btn-danger">Usuń</button>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+  <!-- Nagłówek strony z futurystycznym gradientem -->
+  <div class="position-relative overflow-hidden mb-5 p-4 rounded-4 shadow-lg" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);">
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTI4MCAxNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMCAwaDE5MjB2ODBIMHoiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4xKSIgZmlsbC1vcGFjaXR5PSIuMSIvPjwvZz48L3N2Zz4='); background-size: 100% 100%; opacity: 0.1;"></div>
+    <div class="row align-items-center position-relative z-index-1">
+      <div class="col-lg-8">
+        <h1 class="display-5 fw-bold text-white mb-0">
+          <i class="fas fa-address-book me-2"></i>Moje kontakty
+        </h1>
+        <p class="lead text-white-50 mb-0 mt-2">Zarządzaj kontaktami i śledź bilans pożyczek</p>
+      </div>
+      <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+        <a href="{{ url_for('contact.new') }}" class="btn btn-light btn-lg px-4 shadow-sm hover-lift">
+          <i class="fas fa-plus-circle me-2"></i>Dodaj kontakt
+        </a>
       </div>
     </div>
   </div>
-  {% else %}
-  <div class="alert alert-info">
-    <i class="fas fa-info-circle"></i> Nie masz jeszcze żadnych kontaktów. Dodaj pierwszy kontakt, aby rozpocząć śledzenie pożyczek.
+
+  <!-- Podsumowanie bilansu w nowoczesnych kartach -->
+  {% if contacts %}
+  <div class="row g-4 mb-5">
+    <div class="col-md-6">
+      <div class="card border-0 shadow-lg rounded-4 hover-lift overflow-hidden h-100">
+        <div class="card-body position-relative p-4">
+          <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; right: -15px; top: -15px; background: rgba(25, 135, 84, 0.1);">
+            <i class="fas fa-hand-holding-usd fa-lg text-success"></i>
+          </div>
+          <span class="d-block text-uppercase fw-semibold text-success mb-2" style="font-size: 0.8rem;">Do odzyskania</span>
+          <h2 class="display-5 fw-bold mb-0 counter-value">
+            {{ contacts|selectattr('balance', 'gt', 0)|map(attribute='balance')|sum|default(0)|round(2) }} PLN
+          </h2>
+          <div class="progress mt-3 overflow-visible" style="height: 8px;">
+            <div class="progress-bar bg-success position-relative rounded-pill" style="width: 100%">
+              <div class="position-absolute top-0 end-0 translate-middle-y bg-white rounded-circle border border-success" style="width: 16px; height: 16px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card border-0 shadow-lg rounded-4 hover-lift overflow-hidden h-100">
+        <div class="card-body position-relative p-4">
+          <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; right: -15px; top: -15px; background: rgba(220, 53, 69, 0.1);">
+            <i class="fas fa-hand-holding-dollar fa-lg text-danger"></i>
+          </div>
+          <span class="d-block text-uppercase fw-semibold text-danger mb-2" style="font-size: 0.8rem;">Do oddania</span>
+          <h2 class="display-5 fw-bold mb-0 counter-value">
+            {{ contacts|selectattr('balance', 'lt', 0)|map(attribute='balance')|sum|abs|default(0)|round(2) }} PLN
+          </h2>
+          <div class="progress mt-3 overflow-visible" style="height: 8px;">
+            <div class="progress-bar bg-danger position-relative rounded-pill" style="width: 100%">
+              <div class="position-absolute top-0 end-0 translate-middle-y bg-white rounded-circle border border-danger" style="width: 16px; height: 16px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   {% endif %}
+
+  <!-- Futurystyczny układ kontaktów w kafelkach -->
+  <div class="row g-4">
+    {% if contacts %}
+      <!-- Filtr wyszukiwania -->
+      <div class="col-12 mb-2">
+        <div class="input-group mb-4" style="max-width: 500px; margin: 0 auto;">
+          <span class="input-group-text bg-light border-0 rounded-pill-start">
+            <i class="fas fa-search text-muted"></i>
+          </span>
+          <input type="text" id="contactSearch" class="form-control bg-light border-0 rounded-pill-end" placeholder="Szukaj kontaktu..." style="height: 50px;">
+        </div>
+      </div>
+      
+      <!-- Kontakty jako kafelki -->
+      {% for contact in contacts %}
+      <div class="col-lg-4 col-md-6 contact-card" data-name="{{ contact.name|lower }}" data-contact-id="{{ contact.id }}">
+        <div class="card h-100 border-0 shadow-lg rounded-4 hover-card overflow-hidden">
+          <div class="card-body p-0">
+            <!-- Górna część kafelka z danymi kontaktu -->
+            <div class="p-4 position-relative {% if contact.balance > 0 %}bg-success-subtle{% elif contact.balance < 0 %}bg-danger-subtle{% else %}bg-light{% endif %}">
+              <div class="position-absolute top-0 end-0 p-3">
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-light rounded-pill" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-ellipsis-h"></i>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                      <a href="{{ url_for('contact.view', id=contact.id) }}" class="dropdown-item">
+                        <i class="fas fa-eye text-primary me-2"></i>Szczegóły
+                      </a>
+                    </li>
+                    <li>
+                      <a href="{{ url_for('contact.edit', id=contact.id) }}" class="dropdown-item">
+                        <i class="fas fa-edit text-primary me-2"></i>Edytuj
+                      </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ contact.id }}">
+                        <i class="fas fa-trash text-danger me-2"></i>Usuń
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="d-flex align-items-center mb-3">
+                <div class="avatar-circle bg-white me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                  <span class="fs-2 fw-bold {% if contact.balance > 0 %}text-success{% elif contact.balance < 0 %}text-danger{% else %}text-dark{% endif %}">{{ contact.name[:1] }}</span>
+                </div>
+                <div>
+                  <h5 class="fw-bold mb-0">{{ contact.name }}</h5>
+                  <div class="text-muted small">
+                    {% if contact.email %}{{ contact.email }}{% endif %}
+                    {% if contact.phone %}<br>{{ contact.phone }}{% endif %}
+                  </div>
+                </div>
+              </div>
+              
+              <div class="d-flex align-items-center mb-2">
+                <div class="me-3">
+                  <div class="d-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm" style="width: 50px; height: 50px;">
+                    <i class="fas {% if contact.balance > 0 %}fa-arrow-right text-success{% elif contact.balance < 0 %}fa-arrow-left text-danger{% else %}fa-equals text-secondary{% endif %} fa-lg"></i>
+                  </div>
+                </div>
+                <div>
+                  <div class="fs-4 fw-bold {% if contact.balance > 0 %}text-success{% elif contact.balance < 0 %}text-danger{% else %}text-secondary{% endif %}">
+                    {{ contact.balance|abs|round(2) }} PLN
+                  </div>
+                  <div class="text-muted">
+                    {% if contact.balance > 0 %}
+                      Do odzyskania
+                    {% elif contact.balance < 0 %}
+                      Do oddania
+                    {% else %}
+                      Rozliczone
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Dolna część kafelka z przyciskami akcji -->
+            <div class="p-3">
+              <div class="row g-2">
+                <div class="col-6">
+                  {% if contact.balance >= 0 %}
+                  <!-- Pożyczyłem -->
+                  <a href="{{ url_for('transaction.new', contact_id=contact.id, type='lent') }}" class="btn btn-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center rounded-4 py-3 shadow-sm">
+                    <i class="fas fa-arrow-circle-right fa-2x mb-2"></i>
+                    <span class="fw-semibold">Pożyczyłem</span>
+                  </a>
+                  {% else %}
+                  <!-- Oddałem -->
+                  <a href="{{ url_for('transaction.new', contact_id=contact.id, type='repaid') }}" class="btn btn-danger w-100 h-100 d-flex flex-column align-items-center justify-content-center rounded-4 py-3 shadow-sm">
+                    <i class="fas fa-arrow-circle-right fa-2x mb-2"></i>
+                    <span class="fw-semibold">Oddałem</span>
+                  </a>
+                  {% endif %}
+                </div>
+                <div class="col-6">
+                  {% if contact.balance <= 0 %}
+                  <!-- Pożyczył mi -->
+                  <a href="{{ url_for('transaction.new', contact_id=contact.id, type='borrowed') }}" class="btn btn-info w-100 h-100 d-flex flex-column align-items-center justify-content-center rounded-4 py-3 shadow-sm text-white">
+                    <i class="fas fa-arrow-circle-left fa-2x mb-2"></i>
+                    <span class="fw-semibold">Pożyczył mi</span>
+                  </a>
+                  {% else %}
+                  <!-- Oddał mi -->
+                  <a href="{{ url_for('transaction.new', contact_id=contact.id, type='received') }}" class="btn btn-success w-100 h-100 d-flex flex-column align-items-center justify-content-center rounded-4 py-3 shadow-sm">
+                    <i class="fas fa-arrow-circle-left fa-2x mb-2"></i>
+                    <span class="fw-semibold">Oddał mi</span>
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Modal usunięcia -->
+        <div class="modal fade" id="deleteModal{{ contact.id }}" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-4">
+              <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Usuń kontakt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="text-center mb-4">
+                  <div class="avatar-circle bg-danger-subtle text-danger mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; border-radius: 50%;">
+                    <i class="fas fa-trash-alt fa-2x"></i>
+                  </div>
+                  <h5 class="fw-bold">Czy na pewno chcesz usunąć kontakt?</h5>
+                  <p class="text-muted">Usunięcie kontaktu <strong>{{ contact.name }}</strong> spowoduje również usunięcie wszystkich powiązanych transakcji.</p>
+                </div>
+                
+                {% if contact.balance != 0 %}
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                  <i class="fas fa-exclamation-triangle me-2"></i>
+                  <div>
+                    Uwaga: Ten kontakt ma nierozliczone saldo: 
+                    <strong>{{ contact.balance|abs|round(2) }} PLN</strong>
+                    {% if contact.balance > 0 %}
+                      (do odzyskania)
+                    {% else %}
+                      (do oddania)
+                    {% endif %}
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+              <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Anuluj</button>
+                <form action="{{ url_for('contact.delete', id=contact.id) }}" method="post">
+                  <button type="submit" class="btn btn-danger rounded-pill px-4">Usuń kontakt</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="col-12">
+      <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-body p-5">
+          <div class="text-center">
+            <img src="/api/placeholder/240/140" alt="Brak kontaktów" class="mb-4 img-fluid" style="max-width: 200px; opacity: 0.5;">
+            <h3 class="fw-bold mb-3">Nie masz jeszcze żadnych kontaktów</h3>
+            <p class="text-muted mb-4 px-4">Dodaj swój pierwszy kontakt, aby rozpocząć śledzenie pożyczek</p>
+            <a href="{{ url_for('contact.new') }}" class="btn btn-primary btn-lg rounded-pill px-5 py-3 hover-lift shadow-lg">
+              <i class="fas fa-plus-circle me-2"></i>Dodaj pierwszy kontakt
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Wyszukiwarka kontaktów
+    const searchInput = document.getElementById('contactSearch');
+    if (searchInput) {
+      searchInput.addEventListener('keyup', function() {
+        const searchText = this.value.toLowerCase();
+        const contactCards = document.querySelectorAll('.contact-card');
+        
+        contactCards.forEach(card => {
+          const name = card.getAttribute('data-name');
+          
+          if (name.includes(searchText)) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    }
+    
+    // Animacja liczników
+    document.querySelectorAll('.counter-value').forEach(counter => {
+      const text = counter.textContent.trim();
+      const value = parseFloat(text);
+      
+      if (!isNaN(value)) {
+        let count = 0;
+        const duration = 1500;
+        const frameDuration = 1000/60;
+        const totalFrames = Math.round(duration / frameDuration);
+        
+        const counterAnimation = setInterval(() => {
+          count++;
+          const progress = count / totalFrames;
+          const currentCount = progress * value;
+          
+          if (count === totalFrames) {
+            clearInterval(counterAnimation);
+            counter.textContent = text;
+          } else {
+            counter.textContent = currentCount.toLocaleString('pl-PL', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' PLN';
+          }
+        }, frameDuration);
+      }
+    });
+    
+    // Efekty hover
+    document.querySelectorAll('.hover-lift').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        el.style.transform = 'translateY(-5px)';
+        el.style.transition = 'transform 0.3s ease';
+      });
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = 'translateY(0)';
+      });
+    });
+    
+    // Efekt hover dla kart
+    document.querySelectorAll('.hover-card').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        el.style.transform = 'translateY(-8px)';
+        el.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
+        el.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.08)';
+      });
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = 'translateY(0)';
+        el.style.boxShadow = '';
+      });
+    });
+  });
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+  /* Dodatkowe style dla animacji */
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(78, 115, 223, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 20px rgba(78, 115, 223, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(78, 115, 223, 0);
+    }
+  }
+  
+  .hover-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+</style>
 {% endblock %}

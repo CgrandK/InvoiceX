@@ -89,80 +89,118 @@
 </div>
 
 
-<!-- Widżet pożyczek -->
-<div class="card mb-4">
-    <div class="card-header bg-light">
+<!-- Futurystyczny widżet pożyczek w klikalnymi kafelkami -->
+<div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-white p-4 border-0">
       <div class="d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">
-          <i class="fas fa-hand-holding-usd me-2"></i> Bilans pożyczek
+        <h5 class="fw-bold mb-0">
+          <i class="fas fa-hand-holding-usd text-primary me-2"></i>Bilans pożyczek
         </h5>
-        <a href="{{ url_for('contact.index') }}" class="btn btn-sm btn-outline-primary">
-          Zarządzaj kontaktami
+        <a href="{{ url_for('contact.index') }}" class="btn btn-primary rounded-pill px-3 py-2 hover-lift shadow-sm">
+          <i class="fas fa-users me-1"></i> Zarządzaj kontaktami
         </a>
       </div>
     </div>
-    <div class="card-body">
-      <div class="row mb-3">
+    <div class="card-body p-4 pt-0">
+      <!-- Karty sumaryczne z balansem -->
+      <div class="row g-4 mb-4">
         <div class="col-md-6">
-          <div class="card bg-light">
-            <div class="card-body text-center">
-              <h6 class="text-success mb-2">Do odzyskania</h6>
-              <h3>{{ total_to_receive|round(2) }} PLN</h3>
+          <div class="card border-0 bg-success-subtle rounded-4 hover-lift overflow-hidden">
+            <div class="card-body position-relative p-3">
+              <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; right: -10px; top: -10px; background: rgba(25, 135, 84, 0.1);">
+                <i class="fas fa-hand-holding-usd text-success"></i>
+              </div>
+              <h6 class="text-success mb-1 fw-semibold">Do odzyskania</h6>
+              <h3 class="fw-bold counter-value">{{ total_to_receive|default(0)|round(2) }} PLN</h3>
             </div>
           </div>
         </div>
         <div class="col-md-6">
-          <div class="card bg-light">
-            <div class="card-body text-center">
-              <h6 class="text-danger mb-2">Do oddania</h6>
-              <h3>{{ total_to_pay|round(2) }} PLN</h3>
+          <div class="card border-0 bg-danger-subtle rounded-4 hover-lift overflow-hidden">
+            <div class="card-body position-relative p-3">
+              <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; right: -10px; top: -10px; background: rgba(220, 53, 69, 0.1);">
+                <i class="fas fa-hand-holding-dollar text-danger"></i>
+              </div>
+              <h6 class="text-danger mb-1 fw-semibold">Do oddania</h6>
+              <h3 class="fw-bold counter-value">{{ total_to_pay|default(0)|round(2) }} PLN</h3>
             </div>
           </div>
         </div>
       </div>
   
       {% if contacts_with_debt %}
-      <div class="table-responsive">
-        <table class="table table-sm table-hover">
-          <thead>
-            <tr>
-              <th>Kontakt</th>
-              <th class="text-end">Saldo</th>
-              <th class="text-end">Akcje</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for contact in contacts_with_debt %}
-            <tr>
-              <td>{{ contact.name }}</td>
-              <td class="text-end">
-                <span class="{% if contact.balance > 0 %}text-success{% else %}text-danger{% endif %}">
-                  {{ contact.balance|abs|round(2) }} PLN
-                  {% if contact.balance > 0 %}
-                    <i class="fas fa-arrow-right"></i>
-                  {% else %}
-                    <i class="fas fa-arrow-left"></i>
-                  {% endif %}
-                </span>
-              </td>
-              <td class="text-end">
-                <div class="btn-group btn-group-sm" role="group">
-                  <a href="{{ url_for('contact.view', id=contact.id) }}" class="btn btn-outline-secondary" title="Szczegóły">
-                    <i class="fas fa-eye"></i>
-                  </a>
-                  <a href="{{ url_for('transaction.new', contact_id=contact.id) }}" class="btn btn-outline-primary" title="Dodaj transakcję">
-                    <i class="fas fa-money-bill-wave"></i>
-                  </a>
+      <!-- Kafelki kontaktów -->
+      <div class="row g-3">
+        {% for contact in contacts_with_debt %}
+        <div class="col-lg-4 col-md-6">
+          <a href="{{ url_for('contact.view', id=contact.id) }}" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 hover-card overflow-hidden h-100">
+              <div class="card-body p-0">
+                <!-- Górna część kafelka z danymi kontaktu -->
+                <div class="p-3 position-relative {% if contact.balance > 0 %}bg-success-subtle{% else %}bg-danger-subtle{% endif %}">
+                  <div class="d-flex align-items-center">
+                    <div class="avatar-circle bg-white me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.06);">
+                      <span class="fs-4 fw-bold {% if contact.balance > 0 %}text-success{% else %}text-danger{% endif %}">{{ contact.name[:1] }}</span>
+                    </div>
+                    <div>
+                      <h6 class="fw-bold mb-0 text-dark">{{ contact.name }}</h6>
+                      <div class="fs-5 fw-semibold {% if contact.balance > 0 %}text-success{% else %}text-danger{% endif %}">
+                        {{ contact.balance|abs|round(2) }} PLN
+                        <i class="fas {% if contact.balance > 0 %}fa-arrow-right{% else %}fa-arrow-left{% endif %} fa-xs ms-1"></i>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+                
+                <!-- Dolna część kafelka z przyciskami akcji -->
+                <div class="p-2">
+                  <div class="row g-2">
+                    <div class="col-6">
+                      {% if contact.balance >= 0 %}
+                      <!-- Pożyczyłem -->
+                      <a href="{{ url_for('transaction.new', contact_id=contact.id, type='lent') }}" class="btn btn-primary w-100 d-flex flex-column align-items-center justify-content-center rounded-3 py-2 no-link-click">
+                        <i class="fas fa-arrow-right mb-1"></i>
+                        <span class="small fw-semibold">Pożyczyłem</span>
+                      </a>
+                      {% else %}
+                      <!-- Oddałem -->
+                      <a href="{{ url_for('transaction.new', contact_id=contact.id, type='repaid') }}" class="btn btn-danger w-100 d-flex flex-column align-items-center justify-content-center rounded-3 py-2 no-link-click">
+                        <i class="fas fa-arrow-right mb-1"></i>
+                        <span class="small fw-semibold">Oddałem</span>
+                      </a>
+                      {% endif %}
+                    </div>
+                    <div class="col-6">
+                      {% if contact.balance <= 0 %}
+                      <!-- Pożyczył mi -->
+                      <a href="{{ url_for('transaction.new', contact_id=contact.id, type='borrowed') }}" class="btn btn-info w-100 d-flex flex-column align-items-center justify-content-center rounded-3 py-2 text-white no-link-click">
+                        <i class="fas fa-arrow-left mb-1"></i>
+                        <span class="small fw-semibold">Pożyczył mi</span>
+                      </a>
+                      {% else %}
+                      <!-- Oddał mi -->
+                      <a href="{{ url_for('transaction.new', contact_id=contact.id, type='received') }}" class="btn btn-success w-100 d-flex flex-column align-items-center justify-content-center rounded-3 py-2 no-link-click">
+                        <i class="fas fa-arrow-left mb-1"></i>
+                        <span class="small fw-semibold">Oddał mi</span>
+                      </a>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
       </div>
       {% else %}
-      <div class="alert alert-info mb-0">
-        <i class="fas fa-info-circle"></i> Brak aktywnych pożyczek. Dodaj kontakt i zarejestruj pierwszą transakcję.
+      <div class="text-center p-4">
+        <img src="/api/placeholder/240/140" alt="Brak pożyczek" class="mb-3 img-fluid" style="max-width: 120px; opacity: 0.5;">
+        <h6 class="fw-bold mb-2">Brak aktywnych pożyczek</h6>
+        <p class="text-muted mb-3 px-4">Dodaj kontakt i zarejestruj pierwszą transakcję, aby śledzić pożyczki</p>
+        <a href="{{ url_for('contact.new') }}" class="btn btn-primary btn-lg rounded-3 px-4 hover-lift">
+          <i class="fas fa-plus-circle me-2"></i> Dodaj pierwszy kontakt
+        </a>
       </div>
       {% endif %}
     </div>
@@ -371,6 +409,40 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+     // Efekty dla kart w widżecie
+     document.addEventListener('DOMContentLoaded', function() {
+      // Efekt hover dla kart
+      document.querySelectorAll('.hover-card').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+          el.style.transform = 'translateY(-5px)';
+          el.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
+          el.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.07)';
+        });
+        el.addEventListener('mouseleave', () => {
+          el.style.transform = 'translateY(0)';
+          el.style.boxShadow = '';
+        });
+      });
+      
+      // Efekt hover dla przycisków
+      document.querySelectorAll('.hover-lift').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+          el.style.transform = 'translateY(-3px)';
+          el.style.transition = 'transform 0.3s ease';
+        });
+        el.addEventListener('mouseleave', () => {
+          el.style.transform = 'translateY(0)';
+        });
+      });
+      
+      // Zapobieganie przekierowaniu przy kliknięciu przycisków wewnątrz karty
+      document.querySelectorAll('.no-link-click').forEach(el => {
+        el.addEventListener('click', function(e) {
+          e.stopPropagation();
+        });
+      });
+    });
+    
     document.addEventListener('DOMContentLoaded', function() {
         // Efekty animacji przy ładowaniu strony
         document.querySelectorAll('.hover-lift').forEach(el => {

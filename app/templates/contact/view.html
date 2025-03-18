@@ -1,51 +1,73 @@
-<!-- app/templates/contact/view.html -->
 {% extends "layout.html" %}
 
 {% block content %}
 <div class="container py-4">
   <!-- Nagłówek z informacjami o kontakcie -->
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="d-flex justify-content-between align-items-start">
-        <div>
-          <h2>{{ contact.name }}</h2>
-          
-          {% if contact.email %}
-          <p class="mb-1">
-            <i class="fas fa-envelope text-secondary me-2"></i> {{ contact.email }}
-          </p>
-          {% endif %}
-          
-          {% if contact.phone %}
-          <p class="mb-1">
-            <i class="fas fa-phone text-secondary me-2"></i> {{ contact.phone }}
-          </p>
-          {% endif %}
-          
-          {% if contact.notes %}
-          <p class="font-italic text-muted mt-2">
-            <i class="fas fa-sticky-note text-secondary me-2"></i> {{ contact.notes }}
-          </p>
-          {% endif %}
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-body p-0">
+      <div class="row g-0">
+        <!-- Lewa kolumna z danymi kontaktu -->
+        <div class="col-md-8">
+          <div class="p-4">
+            <div class="d-flex">
+              <div class="avatar-circle bg-primary text-white me-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; border-radius: 50%; font-size: 24px;">
+                {{ contact.name[:1] }}
+              </div>
+              <div>
+                <div class="d-flex align-items-center">
+                  <h2 class="mb-0 fw-bold">{{ contact.name }}</h2>
+                  <span class="badge rounded-pill ms-3 {% if balance > 0 %}bg-success{% elif balance < 0 %}bg-danger{% else %}bg-secondary{% endif %} px-3 py-2">
+                    {% if balance > 0 %}
+                      <i class="fas fa-arrow-right me-1"></i> Do odzyskania
+                    {% elif balance < 0 %}
+                      <i class="fas fa-arrow-left me-1"></i> Do oddania
+                    {% else %}
+                      <i class="fas fa-equals me-1"></i> Rozliczone
+                    {% endif %}
+                  </span>
+                </div>
+                
+                {% if contact.email %}
+                <p class="mb-1 mt-2">
+                  <i class="fas fa-envelope text-secondary me-2"></i> {{ contact.email }}
+                </p>
+                {% endif %}
+                
+                {% if contact.phone %}
+                <p class="mb-1">
+                  <i class="fas fa-phone text-secondary me-2"></i> {{ contact.phone }}
+                </p>
+                {% endif %}
+                
+                {% if contact.notes %}
+                <p class="font-italic text-muted mt-2 mb-0">
+                  <i class="fas fa-sticky-note text-secondary me-2"></i> {{ contact.notes }}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
         </div>
         
-        <div class="text-end">
-          <h4>
-            Saldo: 
-            <span class="{% if balance > 0 %}text-success{% elif balance < 0 %}text-danger{% else %}text-secondary{% endif %}">
+        <!-- Prawa kolumna z bilansem -->
+        <div class="col-md-4 d-flex align-items-center" style="background: linear-gradient(to right, rgba(248, 249, 253, 0), rgba(248, 249, 253, 1));">
+          <div class="text-center w-100 p-4">
+            <div class="d-inline-block p-3 rounded-circle mb-2" style="background: rgba{% if balance > 0 %}(25, 135, 84, 0.1){% elif balance < 0 %}(220, 53, 69, 0.1){% else %}(108, 117, 125, 0.1){% endif %};">
+              <i class="fas {% if balance > 0 %}fa-hand-holding-usd{% elif balance < 0 %}fa-hand-holding-dollar{% else %}fa-balance-scale{% endif %} fa-2x {% if balance > 0 %}text-success{% elif balance < 0 %}text-danger{% else %}text-secondary{% endif %}"></i>
+            </div>
+            <h3 class="fw-bold {% if balance > 0 %}text-success{% elif balance < 0 %}text-danger{% else %}text-secondary{% endif %}">
               {{ balance|abs|round(2) }} PLN
-            </span>
-          </h4>
-          
-          <p class="mb-0">
-            {% if balance > 0 %}
-              <span class="badge bg-success"><i class="fas fa-arrow-right"></i> Do odzyskania</span>
-            {% elif balance < 0 %}
-              <span class="badge bg-danger"><i class="fas fa-arrow-left"></i> Do oddania</span>
-            {% else %}
-              <span class="badge bg-secondary"><i class="fas fa-equals"></i> Rozliczone</span>
-            {% endif %}
-          </p>
+            </h3>
+            <p class="text-muted mb-0">
+              {% if balance > 0 %}
+                Pozostało do odzyskania
+              {% elif balance < 0 %}
+                Pozostało do oddania
+              {% else %}
+                Wszystko rozliczone
+              {% endif %}
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -54,22 +76,51 @@
   <!-- Przyciski akcji -->
   <div class="d-flex justify-content-between mb-4">
     <div>
-      <a href="{{ url_for('contact.index') }}" class="btn btn-secondary me-2">
-        <i class="fas fa-arrow-left"></i> Powrót
+      <a href="{{ url_for('contact.index') }}" class="btn btn-light rounded-pill me-2 hover-lift shadow-sm">
+        <i class="fas fa-arrow-left me-2"></i> Powrót
       </a>
-      <a href="{{ url_for('contact.edit', id=contact.id) }}" class="btn btn-primary me-2">
-        <i class="fas fa-edit"></i> Edytuj kontakt
+      <a href="{{ url_for('contact.edit', id=contact.id) }}" class="btn btn-outline-primary rounded-pill me-2 hover-lift">
+        <i class="fas fa-edit me-2"></i> Edytuj kontakt
       </a>
     </div>
     
     <div class="dropdown">
-      <button class="btn btn-success dropdown-toggle" type="button" id="transactionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="fas fa-plus"></i> Dodaj transakcję
+      <button class="btn btn-primary rounded-pill hover-lift shadow-sm dropdown-toggle" type="button" id="transactionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-plus me-2"></i> Dodaj transakcję
       </button>
-      <ul class="dropdown-menu" aria-labelledby="transactionDropdown">
+      <ul class="dropdown-menu shadow border-0 p-2" aria-labelledby="transactionDropdown">
         <li>
-          <a class="dropdown-item" href="{{ url_for('transaction.new', contact_id=contact.id) }}">
-            <i class="fas fa-hand-holding-usd text-success"></i> Dodaj transakcję
+          <a class="dropdown-item rounded-3 py-2" href="{{ url_for('transaction.new', contact_id=contact.id) }}">
+            <div class="d-flex align-items-center">
+              <div class="transaction-icon-bg d-flex align-items-center justify-content-center rounded-circle me-2" style="width: 36px; height: 36px; background: rgba(25, 135, 84, 0.1);">
+                <i class="fas fa-hand-holding-usd text-success"></i>
+              </div>
+              <div>
+                <span class="d-block fw-medium">Nowa transakcja</span>
+                <small class="text-muted">Pożyczka lub spłata</small>
+              </div>
+            </div>
+          </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <a class="dropdown-item rounded-3 py-2" href="{{ url_for('transaction.new', contact_id=contact.id, type='lent') }}">
+            <i class="fas fa-arrow-right text-primary me-2"></i> Pożyczyłem
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item rounded-3 py-2" href="{{ url_for('transaction.new', contact_id=contact.id, type='borrowed') }}">
+            <i class="fas fa-arrow-left text-info me-2"></i> Pożyczył mi
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item rounded-3 py-2" href="{{ url_for('transaction.new', contact_id=contact.id, type='received') }}">
+            <i class="fas fa-arrow-left text-success me-2"></i> Oddał mi
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item rounded-3 py-2" href="{{ url_for('transaction.new', contact_id=contact.id, type='repaid') }}">
+            <i class="fas fa-arrow-right text-danger me-2"></i> Oddałem
           </a>
         </li>
       </ul>
@@ -77,77 +128,119 @@
   </div>
   
   <!-- Historia transakcji -->
-  <div class="card">
-    <div class="card-header">
-      <h3>Historia transakcji</h3>
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-header bg-white p-4 border-0">
+      <div class="d-flex align-items-center justify-content-between">
+        <h5 class="fw-bold mb-0">
+          <i class="fas fa-history text-primary me-2"></i> Historia transakcji
+        </h5>
+        {% if transactions %}
+        <div class="input-group" style="max-width: 250px;">
+          <span class="input-group-text bg-light border-0">
+            <i class="fas fa-search text-muted"></i>
+          </span>
+          <input type="text" id="transactionSearch" class="form-control bg-light border-0" placeholder="Szukaj...">
+        </div>
+        {% endif %}
+      </div>
     </div>
-    <div class="card-body">
+    
+    <div class="card-body p-0">
       {% if transactions %}
       <div class="table-responsive">
-        <table class="table table-striped">
-          <thead>
+        <table class="table table-hover align-middle mb-0" id="transactionsTable">
+          <thead class="bg-light">
             <tr>
-              <th>Data</th>
-              <th>Typ</th>
-              <th>Kwota</th>
-              <th>Opis</th>
-              <th class="text-end">Akcje</th>
+              <th class="border-0 ps-4">Data</th>
+              <th class="border-0">Typ</th>
+              <th class="border-0">Kwota</th>
+              <th class="border-0">Opis</th>
+              <th class="border-0 pe-4 text-end">Akcje</th>
             </tr>
           </thead>
           <tbody>
             {% for transaction in transactions %}
             <tr>
-              <td>{{ transaction.date.strftime('%d-%m-%Y') }}</td>
+              <td class="ps-4">{{ transaction.date.strftime('%d.%m.%Y') }}</td>
               <td>
                 {% if transaction.transaction_type == TransactionType.LENT_TO %}
-                  <span class="badge bg-primary">Pożyczyłem</span>
+                  <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">
+                    <i class="fas fa-arrow-right me-1"></i> Pożyczyłem
+                  </span>
+                {% elif transaction.transaction_type == TransactionType.BORROWED_FROM %}
+                  <span class="badge bg-info-subtle text-info px-3 py-2 rounded-pill">
+                    <i class="fas fa-arrow-left me-1"></i> Pożyczył mi
+                  </span>
+                {% elif transaction.transaction_type == TransactionType.REPAID_TO %}
+                  <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill">
+                    <i class="fas fa-arrow-right me-1"></i> Oddałem
+                  </span>
                 {% elif transaction.transaction_type == TransactionType.RECEIVED_FROM %}
-                  <span class="badge bg-success">Oddał mi</span>
+                  <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">
+                    <i class="fas fa-arrow-left me-1"></i> Oddał mi
+                  </span>
                 {% endif %}
               </td>
-              <td>{{ transaction.amount|round(2) }} PLN</td>
+              <td class="fw-semibold">{{ transaction.amount|round(2) }} PLN</td>
               <td>{{ transaction.description or '—' }}</td>
-              <td class="text-end">
-                <div class="btn-group btn-group-sm" role="group">
-                  <a href="{{ url_for('transaction.edit', id=transaction.id) }}" class="btn btn-outline-secondary" title="Edytuj">
+              <td class="pe-4 text-end">
+                <div class="btn-group">
+                  <a href="{{ url_for('transaction.edit', id=transaction.id) }}" class="btn btn-sm btn-outline-secondary rounded-pill" title="Edytuj">
                     <i class="fas fa-edit"></i>
                   </a>
-                  <button type="button" class="btn btn-outline-danger" title="Usuń" data-bs-toggle="modal" data-bs-target="#deleteTransactionModal{{ transaction.id }}">
+                  <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" title="Usuń" data-bs-toggle="modal" data-bs-target="#deleteTransactionModal{{ transaction.id }}">
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>
                 
                 <!-- Modal usunięcia transakcji -->
                 <div class="modal fade" id="deleteTransactionModal{{ transaction.id }}" tabindex="-1" aria-hidden="true">
-                  <div class="modal-dialog">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5 class="modal-title">Usuń transakcję</h5>
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow rounded-4">
+                      <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold">Usuń transakcję</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                       </div>
                       <div class="modal-body">
-                        <p>Czy na pewno chcesz usunąć tę transakcję?</p>
-                        <div class="alert alert-info">
-                          <p class="mb-1"><strong>Data:</strong> {{ transaction.date.strftime('%d-%m-%Y') }}                          </p>
-                          <p class="mb-1"><strong>Typ:</strong> 
-                            {% if transaction.transaction_type == TransactionType.LENT_TO %}
-                              Pożyczyłem
-                            {% elif transaction.transaction_type == TransactionType.BORROWED_FROM %}
-                              Pożyczył mi
-                            {% elif transaction.transaction_type == TransactionType.REPAID_TO %}
-                              Oddałem
-                            {% elif transaction.transaction_type == TransactionType.RECEIVED_FROM %}
-                              Oddał mi
-                            {% endif %}
-                          </p>
-                          <p class="mb-1"><strong>Kwota:</strong> {{ transaction.amount|round(2) }} PLN</p>
-                          <p class="mb-0"><strong>Opis:</strong> {{ transaction.description or '—' }}</p>
+                        <div class="text-center mb-3">
+                          <div class="avatar-circle bg-danger-subtle text-danger mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px; border-radius: 50%;">
+                            <i class="fas fa-trash-alt fa-2x"></i>
+                          </div>
+                          <h5 class="fw-bold">Czy na pewno chcesz usunąć tę transakcję?</h5>
+                        </div>
+
+                        <div class="card bg-light border-0 rounded-4 p-3 mb-3">
+                          <div class="row g-0">
+                            <div class="col-md-6">
+                              <p class="mb-1"><strong>Data:</strong> {{ transaction.date.strftime('%d.%m.%Y') }}</p>
+                              <p class="mb-1"><strong>Typ:</strong> 
+                                {% if transaction.transaction_type == TransactionType.LENT_TO %}
+                                  Pożyczyłem
+                                {% elif transaction.transaction_type == TransactionType.BORROWED_FROM %}
+                                  Pożyczył mi
+                                {% elif transaction.transaction_type == TransactionType.REPAID_TO %}
+                                  Oddałem
+                                {% elif transaction.transaction_type == TransactionType.RECEIVED_FROM %}
+                                  Oddał mi
+                                {% endif %}
+                              </p>
+                            </div>
+                            <div class="col-md-6">
+                              <p class="mb-1"><strong>Kwota:</strong> {{ transaction.amount|round(2) }} PLN</p>
+                              <p class="mb-0"><strong>Opis:</strong> {{ transaction.description or '—' }}</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div class="alert alert-warning d-flex" role="alert">
+                          <i class="fas fa-exclamation-triangle me-2"></i>
+                          <div>Usunięcie transakcji wpłynie na bilans z tym kontaktem.</div>
                         </div>
                       </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                      <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Anuluj</button>
                         <form action="{{ url_for('transaction.delete', id=transaction.id) }}" method="post">
-                          <button type="submit" class="btn btn-danger">Usuń</button>
+                          <button type="submit" class="btn btn-danger rounded-pill px-4">Usuń transakcję</button>
                         </form>
                       </div>
                     </div>
@@ -160,11 +253,57 @@
         </table>
       </div>
       {% else %}
-      <div class="alert alert-info">
-        <i class="fas fa-info-circle"></i> Brak transakcji z tym kontaktem. Dodaj pierwszą transakcję, aby rozpocząć śledzenie salda.
+      <div class="text-center p-5">
+        <img src="/api/placeholder/240/140" alt="Brak transakcji" class="mb-3 img-fluid" style="max-width: 150px; opacity: 0.5;">
+        <h5 class="fw-bold mb-2">Brak transakcji z tym kontaktem</h5>
+        <p class="text-muted mb-4">Dodaj pierwszą transakcję, aby rozpocząć śledzenie salda.</p>
+        <a href="{{ url_for('transaction.new', contact_id=contact.id) }}" class="btn btn-primary rounded-pill px-4 hover-lift">
+          <i class="fas fa-plus-circle me-2"></i>Dodaj pierwszą transakcję
+        </a>
       </div>
       {% endif %}
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Wyszukiwarka transakcji
+    const searchInput = document.getElementById('transactionSearch');
+    if (searchInput) {
+      searchInput.addEventListener('keyup', function() {
+        const searchText = this.value.toLowerCase();
+        const table = document.getElementById('transactionsTable');
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        
+        for (let i = 0; i < rows.length; i++) {
+          const date = rows[i].getElementsByTagName('td')[0].textContent.toLowerCase();
+          const type = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase();
+          const amount = rows[i].getElementsByTagName('td')[2].textContent.toLowerCase();
+          const description = rows[i].getElementsByTagName('td')[3].textContent.toLowerCase();
+          
+          if (date.includes(searchText) || type.includes(searchText) || 
+              amount.includes(searchText) || description.includes(searchText)) {
+            rows[i].style.display = '';
+          } else {
+            rows[i].style.display = 'none';
+          }
+        }
+      });
+    }
+    
+    // Efekty hover
+    document.querySelectorAll('.hover-lift').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        el.style.transform = 'translateY(-5px)';
+        el.style.transition = 'transform 0.3s ease';
+      });
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = 'translateY(0)';
+      });
+    });
+  });
+</script>
 {% endblock %}
