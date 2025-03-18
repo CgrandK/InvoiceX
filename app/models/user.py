@@ -74,3 +74,26 @@ class User(db.Model, UserMixin):
             'phone': self.phone,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+        
+    def get_total_lending_balance(self):
+        """
+        Zwraca sumaryczny bilans pożyczek dla użytkownika.
+        Dodatni bilans oznacza, że użytkownik ma więcej do odzyskania.
+        Ujemny bilans oznacza, że użytkownik ma więcej do oddania.
+        """
+        from app.models.transaction import Transaction, TransactionType
+        
+        transactions = Transaction.query.filter_by(user_id=self.id).all()
+        
+        balance = 0
+        for transaction in transactions:
+            if transaction.transaction_type == TransactionType.LENT_TO:
+                balance += float(transaction.amount)
+            elif transaction.transaction_type == TransactionType.BORROWED_FROM:
+                balance -= float(transaction.amount)
+            elif transaction.transaction_type == TransactionType.REPAID_TO:
+                balance -= float(transaction.amount)
+            elif transaction.transaction_type == TransactionType.RECEIVED_FROM:
+                balance += float(transaction.amount)
+        
+        return balance

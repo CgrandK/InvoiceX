@@ -7,6 +7,7 @@ from flask_mail import Mail
 from flask_jwt_extended import JWTManager
 from flask_wtf.csrf import CSRFProtect
 
+
 # Inicjalizacja rozszerzeń
 db = SQLAlchemy()
 migrate = Migrate()
@@ -38,12 +39,17 @@ def create_app(config_class='app.config.Config'):
     from app.routes.invoice import invoice_bp
     from app.routes.reports import reports_bp
     from app.routes.client import client_bp
+    from app.routes.contact import contact_bp
+    from app.routes.transaction import transaction_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(invoice_bp)
     app.register_blueprint(reports_bp)
-    app.register_blueprint(client_bp)
+    app.register_blueprint(client_bp)    
+    app.register_blueprint(contact_bp)
+    app.register_blueprint(transaction_bp)
+
 
 
     # Context processor dla wszystkich szablonów

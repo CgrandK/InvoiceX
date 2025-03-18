@@ -1,11 +1,13 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app import db
-from app.models import Invoice, Client, InvoiceStatus
+from app.models import Invoice, Client, InvoiceStatus, Contact
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta
 from sqlalchemy import func
 import calendar
+from app.models.transaction import Transaction, TransactionType
+
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -106,6 +108,30 @@ def index():
         .scalar() or 0
 
 
+    # Dodaj dane dla widżetu pożyczek
+    contacts_with_debt = Contact.query.filter_by(user_id=current_user.id).all()
+    for contact in contacts_with_debt:
+        contact.balance = contact.get_balance()
+    
+    # Filtruj kontakty z niezerowym saldem
+    contacts_with_debt = [c for c in contacts_with_debt if c.balance != 0]
+    
+    # Sortuj kontakty: najpierw te, którym pożyczyliśmy (saldo dodatnie)
+    contacts_with_debt.sort(key=lambda c: c.balance, reverse=True)
+    
+    # Oblicz sumy
+    total_to_receive = sum(c.balance for c in contacts_with_debt if c.balance > 0)
+    total_to_pay = sum(abs(c.balance) for c in contacts_with_debt if c.balance < 0)
+    
+    # Dodaj do kontekstu
+    context = {
+        # Istniejące dane kontekstu...
+        'contacts_with_debt': contacts_with_debt[:5],  # Pokaż tylko top 5
+        'total_to_receive': total_to_receive,
+        'total_to_pay': total_to_pay,
+        'TransactionType': TransactionType
+    }
+
     return render_template('dashboard/index.html',
                            title='Dashboard',
                            total_invoices=total_invoices,
@@ -117,7 +143,7 @@ def index():
                            monthly_revenue=monthly_revenue[-6:],  # ostatnie 6 miesięcy
                            top_clients=top_clients,
                            total_paid=float(total_paid),
-                           total_pending=float(total_pending))
+                           total_pending=float(total_pending), **context)
 
 
 @dashboard_bp.route('/invoices')

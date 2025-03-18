@@ -1,0 +1,170 @@
+<!-- app/templates/contact/view.html -->
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Nagłówek z informacjami o kontakcie -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h2>{{ contact.name }}</h2>
+          
+          {% if contact.email %}
+          <p class="mb-1">
+            <i class="fas fa-envelope text-secondary me-2"></i> {{ contact.email }}
+          </p>
+          {% endif %}
+          
+          {% if contact.phone %}
+          <p class="mb-1">
+            <i class="fas fa-phone text-secondary me-2"></i> {{ contact.phone }}
+          </p>
+          {% endif %}
+          
+          {% if contact.notes %}
+          <p class="font-italic text-muted mt-2">
+            <i class="fas fa-sticky-note text-secondary me-2"></i> {{ contact.notes }}
+          </p>
+          {% endif %}
+        </div>
+        
+        <div class="text-end">
+          <h4>
+            Saldo: 
+            <span class="{% if balance > 0 %}text-success{% elif balance < 0 %}text-danger{% else %}text-secondary{% endif %}">
+              {{ balance|abs|round(2) }} PLN
+            </span>
+          </h4>
+          
+          <p class="mb-0">
+            {% if balance > 0 %}
+              <span class="badge bg-success"><i class="fas fa-arrow-right"></i> Do odzyskania</span>
+            {% elif balance < 0 %}
+              <span class="badge bg-danger"><i class="fas fa-arrow-left"></i> Do oddania</span>
+            {% else %}
+              <span class="badge bg-secondary"><i class="fas fa-equals"></i> Rozliczone</span>
+            {% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Przyciski akcji -->
+  <div class="d-flex justify-content-between mb-4">
+    <div>
+      <a href="{{ url_for('contact.index') }}" class="btn btn-secondary me-2">
+        <i class="fas fa-arrow-left"></i> Powrót
+      </a>
+      <a href="{{ url_for('contact.edit', id=contact.id) }}" class="btn btn-primary me-2">
+        <i class="fas fa-edit"></i> Edytuj kontakt
+      </a>
+    </div>
+    
+    <div class="dropdown">
+      <button class="btn btn-success dropdown-toggle" type="button" id="transactionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-plus"></i> Dodaj transakcję
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="transactionDropdown">
+        <li>
+          <a class="dropdown-item" href="{{ url_for('transaction.new', contact_id=contact.id) }}">
+            <i class="fas fa-hand-holding-usd text-success"></i> Dodaj transakcję
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
+  <!-- Historia transakcji -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Historia transakcji</h3>
+    </div>
+    <div class="card-body">
+      {% if transactions %}
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Typ</th>
+              <th>Kwota</th>
+              <th>Opis</th>
+              <th class="text-end">Akcje</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for transaction in transactions %}
+            <tr>
+              <td>{{ transaction.date.strftime('%d-%m-%Y') }}</td>
+              <td>
+                {% if transaction.transaction_type == TransactionType.LENT_TO %}
+                  <span class="badge bg-primary">Pożyczyłem</span>
+                {% elif transaction.transaction_type == TransactionType.RECEIVED_FROM %}
+                  <span class="badge bg-success">Oddał mi</span>
+                {% endif %}
+              </td>
+              <td>{{ transaction.amount|round(2) }} PLN</td>
+              <td>{{ transaction.description or '—' }}</td>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm" role="group">
+                  <a href="{{ url_for('transaction.edit', id=transaction.id) }}" class="btn btn-outline-secondary" title="Edytuj">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <button type="button" class="btn btn-outline-danger" title="Usuń" data-bs-toggle="modal" data-bs-target="#deleteTransactionModal{{ transaction.id }}">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+                
+                <!-- Modal usunięcia transakcji -->
+                <div class="modal fade" id="deleteTransactionModal{{ transaction.id }}" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Usuń transakcję</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p>Czy na pewno chcesz usunąć tę transakcję?</p>
+                        <div class="alert alert-info">
+                          <p class="mb-1"><strong>Data:</strong> {{ transaction.date.strftime('%d-%m-%Y') }}                          </p>
+                          <p class="mb-1"><strong>Typ:</strong> 
+                            {% if transaction.transaction_type == TransactionType.LENT_TO %}
+                              Pożyczyłem
+                            {% elif transaction.transaction_type == TransactionType.BORROWED_FROM %}
+                              Pożyczył mi
+                            {% elif transaction.transaction_type == TransactionType.REPAID_TO %}
+                              Oddałem
+                            {% elif transaction.transaction_type == TransactionType.RECEIVED_FROM %}
+                              Oddał mi
+                            {% endif %}
+                          </p>
+                          <p class="mb-1"><strong>Kwota:</strong> {{ transaction.amount|round(2) }} PLN</p>
+                          <p class="mb-0"><strong>Opis:</strong> {{ transaction.description or '—' }}</p>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                        <form action="{{ url_for('transaction.delete', id=transaction.id) }}" method="post">
+                          <button type="submit" class="btn btn-danger">Usuń</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Brak transakcji z tym kontaktem. Dodaj pierwszą transakcję, aby rozpocząć śledzenie salda.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,6 +1,12 @@
 {% extends 'layout.html' %}
 
 {% block content %}
+
+
+
+
+  
+  
 <!-- Główny nagłówek z animowanym tłem -->
 <div class="dashboard-header position-relative overflow-hidden mb-5 p-4 rounded-4 shadow-lg" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);">
     <div class="position-absolute top-0 start-0 w-100 h-100" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTI4MCAxNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMCAwaDE5MjB2ODBIMHoiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4xKSIgZmlsbC1vcGFjaXR5PSIuMSIvPjwvZz48L3N2Zz4='); background-size: 100% 100%; opacity: 0.1;"></div>
@@ -82,6 +88,87 @@
     </div>
 </div>
 
+
+<!-- Widżet pożyczek -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="fas fa-hand-holding-usd me-2"></i> Bilans pożyczek
+        </h5>
+        <a href="{{ url_for('contact.index') }}" class="btn btn-sm btn-outline-primary">
+          Zarządzaj kontaktami
+        </a>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <div class="card bg-light">
+            <div class="card-body text-center">
+              <h6 class="text-success mb-2">Do odzyskania</h6>
+              <h3>{{ total_to_receive|round(2) }} PLN</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card bg-light">
+            <div class="card-body text-center">
+              <h6 class="text-danger mb-2">Do oddania</h6>
+              <h3>{{ total_to_pay|round(2) }} PLN</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      {% if contacts_with_debt %}
+      <div class="table-responsive">
+        <table class="table table-sm table-hover">
+          <thead>
+            <tr>
+              <th>Kontakt</th>
+              <th class="text-end">Saldo</th>
+              <th class="text-end">Akcje</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for contact in contacts_with_debt %}
+            <tr>
+              <td>{{ contact.name }}</td>
+              <td class="text-end">
+                <span class="{% if contact.balance > 0 %}text-success{% else %}text-danger{% endif %}">
+                  {{ contact.balance|abs|round(2) }} PLN
+                  {% if contact.balance > 0 %}
+                    <i class="fas fa-arrow-right"></i>
+                  {% else %}
+                    <i class="fas fa-arrow-left"></i>
+                  {% endif %}
+                </span>
+              </td>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm" role="group">
+                  <a href="{{ url_for('contact.view', id=contact.id) }}" class="btn btn-outline-secondary" title="Szczegóły">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="{{ url_for('transaction.new', contact_id=contact.id) }}" class="btn btn-outline-primary" title="Dodaj transakcję">
+                    <i class="fas fa-money-bill-wave"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="alert alert-info mb-0">
+        <i class="fas fa-info-circle"></i> Brak aktywnych pożyczek. Dodaj kontakt i zarejestruj pierwszą transakcję.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  
 <div class="row g-4">
     <!-- Wykres przychodów miesięcznych -->
     <div class="col-lg-8">

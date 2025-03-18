@@ -1,0 +1,103 @@
+<!-- app/templates/contact/index.html -->
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Moje kontakty</h2>
+    <a href="{{ url_for('contact.new') }}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Dodaj kontakt
+    </a>
+  </div>
+
+  {% if contacts %}
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Nazwa</th>
+              <th>Email</th>
+              <th>Telefon</th>
+              <th class="text-end">Saldo</th>
+              <th class="text-end">Akcje</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for contact in contacts %}
+            <tr>
+              <td>
+                <a href="{{ url_for('contact.view', id=contact.id) }}">{{ contact.name }}</a>
+              </td>
+              <td>{{ contact.email or '-' }}</td>
+              <td>{{ contact.phone or '-' }}</td>
+              <td class="text-end">
+                <span class="badge {% if contact.balance > 0 %}bg-success{% elif contact.balance < 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                  {{ contact.balance|abs|round(2) }} PLN
+                  {% if contact.balance > 0 %}
+                    <i class="fas fa-arrow-right"></i> Do odzyskania
+                  {% elif contact.balance < 0 %}
+                    <i class="fas fa-arrow-left"></i> Do oddania
+                  {% else %}
+                    <i class="fas fa-equals"></i> Rozliczone
+                  {% endif %}
+                </span>
+              </td>
+              <td class="text-end">
+                <div class="btn-group" role="group">
+                  <a href="{{ url_for('transaction.new', contact_id=contact.id) }}" class="btn btn-sm btn-outline-primary" title="Dodaj transakcję">
+                    <i class="fas fa-money-bill-wave"></i>
+                  </a>
+                  <a href="{{ url_for('contact.view', id=contact.id) }}" class="btn btn-sm btn-outline-secondary" title="Szczegóły">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="{{ url_for('contact.edit', id=contact.id) }}" class="btn btn-sm btn-outline-secondary" title="Edytuj">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <button type="button" class="btn btn-sm btn-outline-danger" title="Usuń" data-bs-toggle="modal" data-bs-target="#deleteModal{{ contact.id }}">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+
+                <!-- Modal usunięcia -->
+                <div class="modal fade" id="deleteModal{{ contact.id }}" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Usuń kontakt</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p>Czy na pewno chcesz usunąć kontakt <strong>{{ contact.name }}</strong>?</p>
+                        {% if contact.balance != 0 %}
+                        <p class="text-danger">
+                          <i class="fas fa-exclamation-triangle"></i> 
+                          Uwaga: Ten kontakt ma nierozliczone saldo: {{ contact.balance|round(2) }} PLN
+                        </p>
+                        {% endif %}
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                        <form action="{{ url_for('contact.delete', id=contact.id) }}" method="post">
+                          <button type="submit" class="btn btn-danger">Usuń</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-info">
+    <i class="fas fa-info-circle"></i> Nie masz jeszcze żadnych kontaktów. Dodaj pierwszy kontakt, aby rozpocząć śledzenie pożyczek.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

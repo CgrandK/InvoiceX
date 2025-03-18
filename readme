@@ -1,6 +1,6 @@
 # InvoiceX - System Fakturowania dla Freelancerów
 
-InvoiceX to aplikacja webowa stworzona przy użyciu frameworka Flask, która umożliwia freelancerom i małym firmom zarządzanie fakturami. System pozwala na tworzenie, edytowanie i śledzenie faktur, zarządzanie klientami oraz generowanie raportów.
+InvoiceX to aplikacja webowa stworzona przy użyciu frameworka Flask, która umożliwia freelancerom i małym firmom zarządzanie fakturami. System pozwala na tworzenie, edytowanie i śledzenie faktur, zarządzanie klientami, śledzenie pożyczek oraz generowanie raportów.
 
 ## Struktura projektu
 
@@ -14,7 +14,9 @@ invoicex/
 │   │   ├── user.py               # Model użytkownika
 │   │   ├── client.py             # Model klienta
 │   │   ├── invoice.py            # Model faktury
-│   │   └── invoice_item.py       # Model pozycji faktury
+│   │   ├── invoice_item.py       # Model pozycji faktury
+│   │   ├── contact.py            # Model kontaktu (dla modułu pożyczek)
+│   │   └── transaction.py        # Model transakcji (dla modułu pożyczek)
 │   ├── routes/                   # Kontrolery (widoki/trasy)
 │   │   ├── __init__.py           # Eksport kontrolerów
 │   │   ├── auth.py               # Kontroler autoryzacji
@@ -22,6 +24,8 @@ invoicex/
 │   │   ├── invoice.py            # Kontroler faktur
 │   │   ├── client.py             # Kontroler klientów
 │   │   ├── reports.py            # Kontroler raportów
+│   │   ├── contact.py            # Kontroler kontaktów (dla modułu pożyczek)
+│   │   ├── transaction.py        # Kontroler transakcji (dla modułu pożyczek)
 │   │   └── errors.py             # Obsługa błędów
 │   ├── services/                 # Usługi biznesowe
 │   │   ├── __init__.py
@@ -55,6 +59,12 @@ invoicex/
 │       │   ├── index.html        # Strona główna raportów
 │       │   ├── monthly.html      # Raport miesięczny
 │       │   └── client.html       # Raport klienta
+│       ├── contact/              # Szablony kontaktów (dla modułu pożyczek)
+│       │   ├── index.html        # Lista kontaktów
+│       │   ├── form.html         # Formularz kontaktu
+│       │   └── view.html         # Widok szczegółowy kontaktu
+│       ├── transaction/          # Szablony transakcji (dla modułu pożyczek)
+│       │   └── form.html         # Formularz transakcji
 │       ├── errors/               # Szablony błędów
 │       │   ├── 404.html          # Nie znaleziono
 │       │   ├── 403.html          # Dostęp zabroniony
@@ -105,6 +115,18 @@ Modele reprezentują strukturę bazy danych i relacje między obiektami:
    - Powiązany z `Invoice` relacją many-to-one
    - Implementuje metodę obliczania wartości pozycji (`calculate_total`)
 
+5. **Contact** (`contact.py`):
+   - Przechowuje dane kontaktu (nazwa, email, telefon, notatki)
+   - Powiązany z `User` relacją many-to-one
+   - Powiązany z `Transaction` relacją one-to-many
+   - Implementuje metodę pobierania salda (`get_balance`)
+
+6. **Transaction** (`transaction.py`):
+   - Przechowuje transakcje finansowe między użytkownikiem a kontaktem
+   - Zawiera enum `TransactionType` definiujący typy transakcji (LENT_TO, BORROWED_FROM, REPAID_TO, RECEIVED_FROM)
+   - Powiązany z `User` i `Contact` relacjami many-to-one
+   - Implementuje metody do obliczania bilansu (`get_balance_with_contact`)
+
 ### Kontrolery/Trasy (`app/routes/`)
 
 Kontrolery obsługują zapytania HTTP, przetwarzają dane i renderują szablony:
@@ -117,6 +139,7 @@ Kontrolery obsługują zapytania HTTP, przetwarzają dane i renderują szablony:
 2. **dashboard.py**:
    - Wyświetla stronę główną dashboardu z podsumowaniem i statystykami
    - Obsługuje listę faktur i klientów z filtrowaniem i paginacją
+   - Wyświetla widżet bilansu pożyczek
 
 3. **invoice.py**:
    - Obsługuje CRUD (create, read, update, delete) dla faktur
@@ -131,7 +154,16 @@ Kontrolery obsługują zapytania HTTP, przetwarzają dane i renderują szablony:
    - Generuje raporty miesięczne i raporty klientów
    - Obsługuje eksport danych do CSV i Excel
 
-6. **errors.py**:
+6. **contact.py**:
+   - Obsługuje CRUD dla kontaktów
+   - Wyświetla listę kontaktów z saldem
+   - Pokazuje szczegóły kontaktu wraz z historią transakcji
+
+7. **transaction.py**:
+   - Obsługuje tworzenie, edycję i usuwanie transakcji finansowych
+   - Implementuje logikę dla różnych typów transakcji
+
+8. **errors.py**:
    - Obsługuje strony błędów (404, 403, 500)
 
 ### Usługi biznesowe (`app/services/`)
@@ -165,6 +197,7 @@ Szablony HTML używają silnika Jinja2 do renderowania interfejsu użytkownika:
 
 3. **Szablony dashboardu** (`dashboard/`):
    - Widoki dla strony głównej i list faktur/klientów
+   - Zawiera widżet bilansu pożyczek
 
 4. **Szablony faktur** (`invoice/`):
    - Formularze do tworzenia/edycji faktur
@@ -172,6 +205,14 @@ Szablony HTML używają silnika Jinja2 do renderowania interfejsu użytkownika:
 
 5. **Szablony raportów** (`reports/`):
    - Widoki dla różnych rodzajów raportów i eksportu
+
+6. **Szablony kontaktów** (`contact/`):
+   - Lista kontaktów z informacją o saldzie
+   - Formularz dodawania/edycji kontaktu
+   - Widok szczegółowy kontaktu z historią transakcji
+
+7. **Szablony transakcji** (`transaction/`):
+   - Formularz dodawania/edycji transakcji finansowej
 
 ### Pliki statyczne (`app/static/`)
 
@@ -228,7 +269,7 @@ Szablony HTML używają silnika Jinja2 do renderowania interfejsu użytkownika:
 
 3. **Dashboard**:
    - Użytkownik widzi podsumowanie i statystyki (`dashboard.py`)
-   - Może przejść do list faktur i klientów
+   - Może przejść do list faktur, klientów i kontaktów
 
 4. **Zarządzanie klientami**:
    - Użytkownik dodaje, edytuje, wyświetla klientów (`client.py`)
@@ -241,9 +282,57 @@ Szablony HTML używają silnika Jinja2 do renderowania interfejsu użytkownika:
    - Faktura jest zapisywana w bazie danych (`Invoice` i `InvoiceItem` modele)
    - Użytkownik może wygenerować PDF, oznaczyć fakturę jako opłaconą, wysłać link do płatności
 
-6. **Raporty**:
+6. **Zarządzanie kontaktami i bilansem finansowym**:
+   - Użytkownik dodaje, edytuje, wyświetla kontakty (`contact.py`)
+   - Rejestruje transakcje finansowe (pożyczki, spłaty) (`transaction.py`)
+   - Śledzi bilans finansowy z każdym kontaktem
+   - System automatycznie oblicza salda i wyświetla je w interfejsie
+
+7. **Raporty**:
    - Użytkownik generuje raporty i eksportuje dane (`reports.py`)
    - Dane są przetwarzane i prezentowane w różnych formatach
+
+## Moduł bilansu finansowego
+
+Moduł bilansu finansowego pozwala śledzić pożyczki i spłaty pomiędzy użytkownikiem a jego kontaktami.
+
+### Typy transakcji
+
+System obsługuje cztery typy transakcji:
+
+1. **LENT_TO (Pożyczyłem)** - rejestruje kwotę, którą użytkownik pożyczył kontaktowi
+   - Zwiększa saldo, które kontakt jest winien użytkownikowi
+
+2. **BORROWED_FROM (Pożyczył mi)** - rejestruje kwotę, którą kontakt pożyczył użytkownikowi
+   - Zwiększa saldo, które użytkownik jest winien kontaktowi
+
+3. **REPAID_TO (Oddałem)** - rejestruje kwotę, którą użytkownik oddał kontaktowi
+   - Zmniejsza saldo, które użytkownik jest winien kontaktowi
+
+4. **RECEIVED_FROM (Oddał mi)** - rejestruje kwotę, którą kontakt oddał użytkownikowi
+   - Zmniejsza saldo, które kontakt jest winien użytkownikowi
+
+### Obliczanie salda
+
+Saldo z kontaktem jest obliczane jako:
+
+```
+Ile kontakt jest mi winien = (ile mu pożyczyłem - ile mi oddał)
+Ile ja jestem winien kontaktowi = (ile mi pożyczył - ile mu oddałem)
+
+Całkowity bilans = Ile kontakt jest mi winien - Ile ja jestem winien kontaktowi
+```
+
+- Dodatni bilans oznacza, że kontakt jest winien użytkownikowi
+- Ujemny bilans oznacza, że użytkownik jest winien kontaktowi
+- Zerowy bilans oznacza, że wszystkie pożyczki zostały rozliczone
+
+### Widżet na dashboardzie
+
+Dashboard zawiera widżet podsumowujący bilans pożyczek, który pokazuje:
+- Łączną kwotę do odzyskania (suma dodatnich sald)
+- Łączną kwotę do oddania (suma ujemnych sald)
+- Listę kontaktów z niezerowym saldem
 
 ## Przepływ danych
 
@@ -324,6 +413,32 @@ Szablony HTML używają silnika Jinja2 do renderowania interfejsu użytkownika:
    ```
 
 Aplikacja będzie dostępna pod adresem [http://localhost:5000](http://localhost:5000).
+
+## Przewodnik po module bilansu finansowego
+
+### Dodawanie nowego kontaktu
+1. Przejdź do zakładki "Kontakty" w głównym menu
+2. Kliknij "Dodaj kontakt"
+3. Wypełnij formularz z danymi kontaktu
+4. Kliknij "Zapisz"
+
+### Rejestrowanie pożyczki
+1. Przejdź do widoku konkretnego kontaktu
+2. Kliknij "Dodaj transakcję"
+3. Wybierz typ transakcji ("Pożyczyłem" lub "Pożyczył mi")
+4. Wprowadź kwotę, datę i opis
+5. Kliknij "Zapisz"
+
+### Rejestrowanie spłaty
+1. Przejdź do widoku konkretnego kontaktu
+2. Kliknij "Dodaj transakcję"
+3. Wybierz typ transakcji ("Oddałem" lub "Oddał mi")
+4. Wprowadź kwotę, datę i opis
+5. Kliknij "Zapisz"
+
+### Przeglądanie bilansu
+1. Na dashboardzie znajdziesz widżet podsumowujący bilans pożyczek
+2. Pełny bilans i historię transakcji dla każdego kontaktu zobaczysz w widoku szczegółowym kontaktu
 
 ## Rozszerzanie aplikacji
 

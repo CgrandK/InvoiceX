@@ -4,6 +4,8 @@ from app.routes.invoice import invoice_bp
 from app.routes.reports import reports_bp
 from app.routes.client import client_bp
 from app.routes.errors import errors_bp
+from app.routes.contact import contact_bp
+from app.routes.transaction import transaction_bp
 
 __all__ = [
     'auth_bp',
@@ -11,5 +13,7 @@ __all__ = [
     'invoice_bp',
     'reports_bp',
     'client_bp',
-    'errors_bp'
+    'errors_bp',
+    'contact_bp',
+    'transaction_bp'
 ]
