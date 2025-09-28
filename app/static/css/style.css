@@ -93,16 +93,6 @@ main {
     transition: box-shadow 0.3s ease-in-out;
 }
 
-/* Custom class for client cards */
-.client-card {
-    transition: all 0.3s ease;
-}
-
-.client-card:hover {
-    border-color: #4e73df;
-    background-color: #f8f9fc;
-}
-
 /* Status badges */
 .status-paid {
     background-color: #1cc88a !important;
@@ -162,12 +152,12 @@ main {
     .no-print {
         display: none !important;
     }
-    
+
     .invoice-container {
         padding: 0;
         margin: 0;
     }
-    
+
     .invoice-print {
         border: none !important;
         box-shadow: none !important;

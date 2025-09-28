@@ -33,9 +33,6 @@ class User(db.Model, UserMixin):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     last_login = db.Column(db.DateTime)
     
-    # Relacje
-    clients = db.relationship('Client', backref='user', lazy='dynamic', cascade='all, delete-orphan')
-    invoices = db.relationship('Invoice', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     
     def __init__(self, email, password, first_name, last_name, **kwargs):
         self.email = email.lower()

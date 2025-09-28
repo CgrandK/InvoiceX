@@ -5,85 +5,20 @@
 
 
 
-  
-  
+
+
 <!-- Główny nagłówek z animowanym tłem -->
-<div class="dashboard-header position-relative overflow-hidden mb-5 p-4 rounded-4 shadow-lg" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);">
-    <div class="position-absolute top-0 start-0 w-100 h-100" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTI4MCAxNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMCAwaDE5MjB2ODBIMHoiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4xKSIgZmlsbC1vcGFjaXR5PSIuMSIvPjwvZz48L3N2Zz4='); background-size: 100% 100%; opacity: 0.1;"></div>
+<div class="dashboard-header position-relative overflow-hidden mb-5 p-4 rounded-4 shadow-lg"
+    style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);">
+    <div class="position-absolute top-0 start-0 w-100 h-100"
+        style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTI4MCAxNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMCAwaDE5MjB2ODBIMHoiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4xKSIgZmlsbC1vcGFjaXR5PSIuMSIvPjwvZz48L3N2Zz4='); background-size: 100% 100%; opacity: 0.1;">
+    </div>
     <div class="row align-items-center position-relative z-index-1">
         <div class="col-lg-8">
             <h1 class="display-5 fw-bold text-white mb-0">
                 <span class="welcome-text">Witaj, {{ current_user.first_name }}!</span>
             </h1>
             <p class="lead text-white-50 mb-0 mt-2">Zarządzaj swoimi finansami z łatwością</p>
-        </div>
-        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-            <a href="{{ url_for('invoice.create') }}" class="btn btn-light btn-lg px-4 shadow-sm hover-lift">
-                <i class="fas fa-plus-circle me-2"></i>Wystaw fakturę
-            </a>
-        </div>
-    </div>
-</div>
-
-<!-- Interaktywne karty statystyk -->
-<div class="row g-4 mb-5">
-    <div class="col-xl-3 col-md-6">
-        <div class="card border-0 shadow-sm rounded-4 hover-lift overflow-hidden h-100">
-            <div class="card-body position-relative p-4">
-                <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; right: -15px; top: -15px; background: rgba(66, 99, 235, 0.1);">
-                    <i class="fas fa-file-invoice fa-lg text-primary"></i>
-                </div>
-                <span class="d-block text-uppercase fw-semibold text-primary mb-2" style="font-size: 0.8rem;">Wszystkie faktury</span>
-                <h2 class="display-5 fw-bold mb-0 counter-value">{{ total_invoices }}</h2>
-                <div class="progress mt-3" style="height: 4px;">
-                    <div class="progress-bar bg-primary" style="width: 100%"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6">
-        <div class="card border-0 shadow-sm rounded-4 hover-lift overflow-hidden h-100">
-            <div class="card-body position-relative p-4">
-                <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; right: -15px; top: -15px; background: rgba(25, 135, 84, 0.1);">
-                    <i class="fas fa-check-circle fa-lg text-success"></i>
-                </div>
-                <span class="d-block text-uppercase fw-semibold text-success mb-2" style="font-size: 0.8rem;">Opłacone faktury</span>
-                <h2 class="display-5 fw-bold mb-0 counter-value">{{ paid_invoices }}</h2>
-                <div class="progress mt-3" style="height: 4px;">
-                    <div class="progress-bar bg-success" style="width: {{ 100 * paid_invoices / total_invoices if total_invoices > 0 else 0 }}%"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6">
-        <div class="card border-0 shadow-sm rounded-4 hover-lift overflow-hidden h-100">
-            <div class="card-body position-relative p-4">
-                <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; right: -15px; top: -15px; background: rgba(255, 193, 7, 0.1);">
-                    <i class="fas fa-clock fa-lg text-warning"></i>
-                </div>
-                <span class="d-block text-uppercase fw-semibold text-warning mb-2" style="font-size: 0.8rem;">Oczekujące faktury</span>
-                <h2 class="display-5 fw-bold mb-0 counter-value">{{ pending_invoices }}</h2>
-                <div class="progress mt-3" style="height: 4px;">
-                    <div class="progress-bar bg-warning" style="width: {{ 100 * pending_invoices / total_invoices if total_invoices > 0 else 0 }}%"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6">
-        <div class="card border-0 shadow-sm rounded-4 hover-lift overflow-hidden h-100">
-            <div class="card-body position-relative p-4">
-                <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; right: -15px; top: -15px; background: rgba(220, 53, 69, 0.1);">
-                    <i class="fas fa-exclamation-circle fa-lg text-danger"></i>
-                </div>
-                <span class="d-block text-uppercase fw-semibold text-danger mb-2" style="font-size: 0.8rem;">Przeterminowane</span>
-                <h2 class="display-5 fw-bold mb-0 counter-value">{{ overdue_invoices }}</h2>
-                <div class="progress mt-3" style="height: 4px;">
-                    <div class="progress-bar bg-danger" style="width: {{ 100 * overdue_invoices / total_invoices if total_invoices > 0 else 0 }}%"></div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -92,358 +27,170 @@
 <!-- Futurystyczny widżet pożyczek w klikalnymi kafelkami -->
 <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
     <div class="card-header bg-white p-4 border-0">
-      <div class="d-flex justify-content-between align-items-center">
-        <h5 class="fw-bold mb-0">
-          <i class="fas fa-hand-holding-usd text-primary me-2"></i>Bilans pożyczek
-        </h5>
-        <a href="{{ url_for('contact.index') }}" class="btn btn-primary rounded-pill px-3 py-2 hover-lift shadow-sm">
-          <i class="fas fa-users me-1"></i> Zarządzaj kontaktami
-        </a>
-      </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">
+                <i class="fas fa-hand-holding-usd text-primary me-2"></i>Bilans pożyczek
+            </h5>
+            <a href="{{ url_for('contact.index') }}"
+                class="btn btn-primary rounded-pill px-3 py-2 hover-lift shadow-sm">
+                <i class="fas fa-users me-1"></i> Zarządzaj kontaktami
+            </a>
+        </div>
     </div>
     <div class="card-body p-4 pt-0">
-      <!-- Karty sumaryczne z balansem -->
-      <div class="row g-4 mb-4">
-        <div class="col-md-6">
-          <div class="card border-0 bg-success-subtle rounded-4 hover-lift overflow-hidden">
-            <div class="card-body position-relative p-3">
-              <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; right: -10px; top: -10px; background: rgba(25, 135, 84, 0.1);">
-                <i class="fas fa-hand-holding-usd text-success"></i>
-              </div>
-              <h6 class="text-success mb-1 fw-semibold">Do odzyskania</h6>
-              <h3 class="fw-bold counter-value">{{ total_to_receive|default(0)|round(2) }} PLN</h3>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="card border-0 bg-danger-subtle rounded-4 hover-lift overflow-hidden">
-            <div class="card-body position-relative p-3">
-              <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; right: -10px; top: -10px; background: rgba(220, 53, 69, 0.1);">
-                <i class="fas fa-hand-holding-dollar text-danger"></i>
-              </div>
-              <h6 class="text-danger mb-1 fw-semibold">Do oddania</h6>
-              <h3 class="fw-bold counter-value">{{ total_to_pay|default(0)|round(2) }} PLN</h3>
-            </div>
-          </div>
-        </div>
-      </div>
-  
-      {% if contacts_with_debt %}
-      <!-- Kafelki kontaktów -->
-      <div class="row g-3">
-        {% for contact in contacts_with_debt %}
-        <div class="col-lg-4 col-md-6">
-          <a href="{{ url_for('contact.view', id=contact.id) }}" class="text-decoration-none">
-            <div class="card border-0 shadow-sm rounded-4 hover-card overflow-hidden h-100">
-              <div class="card-body p-0">
-                <!-- Górna część kafelka z danymi kontaktu -->
-                <div class="p-3 position-relative {% if contact.balance > 0 %}bg-success-subtle{% else %}bg-danger-subtle{% endif %}">
-                  <div class="d-flex align-items-center">
-                    <div class="avatar-circle bg-white me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.06);">
-                      <span class="fs-4 fw-bold {% if contact.balance > 0 %}text-success{% else %}text-danger{% endif %}">{{ contact.name[:1] }}</span>
+        <!-- Karty sumaryczne z balansem -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card border-0 bg-success-subtle rounded-4 hover-lift overflow-hidden">
+                    <div class="card-body position-relative p-3">
+                        <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 45px; height: 45px; right: -10px; top: -10px; background: rgba(25, 135, 84, 0.1);">
+                            <i class="fas fa-hand-holding-usd text-success"></i>
+                        </div>
+                        <h6 class="text-success mb-1 fw-semibold">Do odzyskania</h6>
+                        <h3 class="fw-bold counter-value">{{ total_to_receive|default(0)|round(2) }} PLN</h3>
                     </div>
-                    <div>
-                      <h6 class="fw-bold mb-0 text-dark">{{ contact.name }}</h6>
-                      <div class="fs-5 fw-semibold {% if contact.balance > 0 %}text-success{% else %}text-danger{% endif %}">
-                        {{ contact.balance|abs|round(2) }} PLN
-                        <i class="fas {% if contact.balance > 0 %}fa-arrow-right{% else %}fa-arrow-left{% endif %} fa-xs ms-1"></i>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-                
-                <!-- Dolna część kafelka z przyciskami akcji -->
-                <div class="p-2">
-                  <div class="row g-2">
-                    <div class="col-6">
-                      {% if contact.balance >= 0 %}
-                      <!-- Pożyczyłem -->
-                      <a href="{{ url_for('transaction.new', contact_id=contact.id, type='lent') }}" class="btn btn-primary w-100 d-flex flex-column align-items-center justify-content-center rounded-3 py-2 no-link-click">
-                        <i class="fas fa-arrow-right mb-1"></i>
-                        <span class="small fw-semibold">Pożyczyłem</span>
-                      </a>
-                      {% else %}
-                      <!-- Oddałem -->
-                      <a href="{{ url_for('transaction.new', contact_id=contact.id, type='repaid') }}" class="btn btn-danger w-100 d-flex flex-column align-items-center justify-content-center rounded-3 py-2 no-link-click">
-                        <i class="fas fa-arrow-right mb-1"></i>
-                        <span class="small fw-semibold">Oddałem</span>
-                      </a>
-                      {% endif %}
-                    </div>
-                    <div class="col-6">
-                      {% if contact.balance <= 0 %}
-                      <!-- Pożyczył mi -->
-                      <a href="{{ url_for('transaction.new', contact_id=contact.id, type='borrowed') }}" class="btn btn-info w-100 d-flex flex-column align-items-center justify-content-center rounded-3 py-2 text-white no-link-click">
-                        <i class="fas fa-arrow-left mb-1"></i>
-                        <span class="small fw-semibold">Pożyczył mi</span>
-                      </a>
-                      {% else %}
-                      <!-- Oddał mi -->
-                      <a href="{{ url_for('transaction.new', contact_id=contact.id, type='received') }}" class="btn btn-success w-100 d-flex flex-column align-items-center justify-content-center rounded-3 py-2 no-link-click">
-                        <i class="fas fa-arrow-left mb-1"></i>
-                        <span class="small fw-semibold">Oddał mi</span>
-                      </a>
-                      {% endif %}
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
-          </a>
+            <div class="col-md-6">
+                <div class="card border-0 bg-danger-subtle rounded-4 hover-lift overflow-hidden">
+                    <div class="card-body position-relative p-3">
+                        <div class="stats-icon-bg position-absolute rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 45px; height: 45px; right: -10px; top: -10px; background: rgba(220, 53, 69, 0.1);">
+                            <i class="fas fa-hand-holding-dollar text-danger"></i>
+                        </div>
+                        <h6 class="text-danger mb-1 fw-semibold">Do oddania</h6>
+                        <h3 class="fw-bold counter-value">{{ total_to_pay|default(0)|round(2) }} PLN</h3>
+                    </div>
+                </div>
+            </div>
         </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <div class="text-center p-4">
-        <img src="/api/placeholder/240/140" alt="Brak pożyczek" class="mb-3 img-fluid" style="max-width: 120px; opacity: 0.5;">
-        <h6 class="fw-bold mb-2">Brak aktywnych pożyczek</h6>
-        <p class="text-muted mb-3 px-4">Dodaj kontakt i zarejestruj pierwszą transakcję, aby śledzić pożyczki</p>
-        <a href="{{ url_for('contact.new') }}" class="btn btn-primary btn-lg rounded-3 px-4 hover-lift">
-          <i class="fas fa-plus-circle me-2"></i> Dodaj pierwszy kontakt
-        </a>
-      </div>
-      {% endif %}
-    </div>
-  </div>
 
-  
-<div class="row g-4">
-    <!-- Wykres przychodów miesięcznych -->
-    <div class="col-lg-8">
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 h-100">
-            <div class="card-header border-0 bg-white p-4">
-                <div class="d-flex align-items-center justify-content-between">
-                    <h5 class="fw-bold mb-0">
-                        <i class="fas fa-chart-bar text-primary me-2"></i>Przychód miesięczny
-                    </h5>
-                    <div class="chart-actions">
-                        <button class="btn btn-sm btn-light border-0" id="chartView" data-view="bar">
-                            <i class="fas fa-chart-column"></i>
-                        </button>
-                        <button class="btn btn-sm btn-light border-0" id="chartViewLine" data-view="line">
-                            <i class="fas fa-chart-line"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body p-4 pt-0">
-                <div class="chart-container" style="position: relative; height: 300px;">
-                    <canvas id="monthlyRevenueChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
+        {% if contacts_with_debt %}
+        <!-- Kafelki kontaktów -->
+        <div class="row g-3">
+            {% for contact in contacts_with_debt %}
+            <div class="col-lg-4 col-md-6">
+                <a href="{{ url_for('contact.view', id=contact.id) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm rounded-4 hover-card overflow-hidden h-100">
+                        <div class="card-body p-0">
+                            <!-- Górna część kafelka z danymi kontaktu -->
+                            <div
+                                class="p-3 position-relative {% if contact.balance > 0 %}bg-success-subtle{% else %}bg-danger-subtle{% endif %}">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle bg-white me-3 d-flex align-items-center justify-content-center"
+                                        style="width: 48px; height: 48px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.06);">
+                                        <span
+                                            class="fs-4 fw-bold {% if contact.balance > 0 %}text-success{% else %}text-danger{% endif %}">{{
+                                            contact.name[:1] }}</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0 text-dark">{{ contact.name }}</h6>
+                                        <div
+                                            class="fs-5 fw-semibold {% if contact.balance > 0 %}text-success{% else %}text-danger{% endif %}">
+                                            {{ contact.balance|abs|round(2) }} PLN
+                                            <i
+                                                class="fas {% if contact.balance > 0 %}fa-arrow-right{% else %}fa-arrow-left{% endif %} fa-xs ms-1"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-    <!-- Podsumowanie płatności -->
-    <div class="col-lg-4">
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 h-100">
-            <div class="card-header border-0 bg-white p-4">
-                <h5 class="fw-bold mb-0">
-                    <i class="fas fa-wallet text-primary me-2"></i>Podsumowanie płatności
-                </h5>
+                            <!-- Dolna część kafelka z przyciskami akcji -->
+                            <div class="p-2">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        {% if contact.balance >= 0 %}
+                                        <!-- Pożyczyłem -->
+                                        <a href="{{ url_for('transaction.new', contact_id=contact.id, type='lent') }}"
+                                            class="btn btn-primary w-100 d-flex flex-column align-items-center justify-content-center rounded-3 py-2 no-link-click">
+                                            <i class="fas fa-arrow-right mb-1"></i>
+                                            <span class="small fw-semibold">Pożyczyłem</span>
+                                        </a>
+                                        {% else %}
+                                        <!-- Oddałem -->
+                                        <a href="{{ url_for('transaction.new', contact_id=contact.id, type='repaid') }}"
+                                            class="btn btn-danger w-100 d-flex flex-column align-items-center justify-content-center rounded-3 py-2 no-link-click">
+                                            <i class="fas fa-arrow-right mb-1"></i>
+                                            <span class="small fw-semibold">Oddałem</span>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-6">
+                                        {% if contact.balance <= 0 %} <!-- Pożyczył mi -->
+                                            <a href="{{ url_for('transaction.new', contact_id=contact.id, type='borrowed') }}"
+                                                class="btn btn-info w-100 d-flex flex-column align-items-center justify-content-center rounded-3 py-2 text-white no-link-click">
+                                                <i class="fas fa-arrow-left mb-1"></i>
+                                                <span class="small fw-semibold">Pożyczył mi</span>
+                                            </a>
+                                            {% else %}
+                                            <!-- Oddał mi -->
+                                            <a href="{{ url_for('transaction.new', contact_id=contact.id, type='received') }}"
+                                                class="btn btn-success w-100 d-flex flex-column align-items-center justify-content-center rounded-3 py-2 no-link-click">
+                                                <i class="fas fa-arrow-left mb-1"></i>
+                                                <span class="small fw-semibold">Oddał mi</span>
+                                            </a>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
             </div>
-            <div class="card-body p-4 pt-0">
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="fw-semibold mb-0 text-success">
-                            <i class="fas fa-circle fa-xs me-1"></i>Opłacone
-                        </h6>
-                        <span class="fw-bold text-success">{{ "%.2f"|format(total_paid) }} zł</span>
-                    </div>
-                    <div class="progress rounded-pill" style="height: 8px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ 100 * total_paid / (total_paid + total_pending) if total_paid + total_pending > 0 else 0 }}%"></div>
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="fw-semibold mb-0 text-warning">
-                            <i class="fas fa-circle fa-xs me-1"></i>Oczekujące
-                        </h6>
-                        <span class="fw-bold text-warning">{{ "%.2f"|format(total_pending) }} zł</span>
-                    </div>
-                    <div class="progress rounded-pill" style="height: 8px;">
-                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ 100 * total_pending / (total_paid + total_pending) if total_paid + total_pending > 0 else 0 }}%"></div>
-                    </div>
-                </div>
-                <div class="text-center mt-4">
-                    <a href="{{ url_for('reports.index') }}" class="btn btn-primary w-100 rounded-pill hover-lift">
-                        <i class="fas fa-chart-bar me-2"></i>Szczegółowe raporty
-                    </a>
-                </div>
-            </div>
+            {% endfor %}
         </div>
+        {% else %}
+        <div class="text-center p-4">
+            <h6 class="fw-bold mb-2">Brak aktywnych pożyczek</h6>
+            <p class="text-muted mb-3 px-4">Dodaj kontakt i zarejestruj pierwszą transakcję, aby śledzić pożyczki</p>
+            <a href="{{ url_for('contact.new') }}" class="btn btn-primary btn-lg rounded-3 px-4 hover-lift">
+                <i class="fas fa-plus-circle me-2"></i> Dodaj pierwszą transakcje
+            </a>
+        </div>
+        {% endif %}
     </div>
 </div>
 
-<div class="row g-4 mt-1">
-    <!-- Ostatnie faktury -->
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-            <div class="card-header bg-white p-4 border-0">
-                <div class="d-flex align-items-center justify-content-between">
-                    <h5 class="fw-bold mb-0">
-                        <i class="fas fa-history text-primary me-2"></i>Ostatnie faktury
-                    </h5>
-                    <a href="{{ url_for('dashboard.invoices') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                        Zobacz wszystkie
-                    </a>
-                </div>
-            </div>
-            <div class="card-body p-0">
-                {% if recent_invoices %}
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="border-0 ps-4">Numer</th>
-                                <th class="border-0">Klient</th>
-                                <th class="border-0">Kwota</th>
-                                <th class="border-0 pe-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for invoice in recent_invoices %}
-                            <tr>
-                                <td class="ps-4">
-                                    <a href="{{ url_for('invoice.view', invoice_id=invoice.id) }}" class="fw-semibold text-decoration-none">
-                                        {{ invoice.invoice_number }}
-                                    </a>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-circle bg-light text-primary me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border-radius: 50%;">
-                                            {{ invoice.client.name[:1] }}
-                                        </div>
-                                        <span>{{ invoice.client.name }}</span>
-                                    </div>
-                                </td>
-                                <td class="fw-semibold">{{ "%.2f"|format(invoice.total) }} zł</td>
-                                <td class="pe-4">
-                                    {% if invoice.status == 'paid' %}
-                                    <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2">Opłacona</span>
-                                    {% elif invoice.status == 'pending' %}
-                                    <span class="badge rounded-pill bg-warning-subtle text-warning px-3 py-2">Oczekująca</span>
-                                    {% elif invoice.status == 'overdue' %}
-                                    <span class="badge rounded-pill bg-danger-subtle text-danger px-3 py-2">Przeterminowana</span>
-                                    {% elif invoice.status == 'draft' %}
-                                    <span class="badge rounded-pill bg-secondary-subtle text-secondary px-3 py-2">Szkic</span>
-                                    {% elif invoice.status == 'canceled' %}
-                                    <span class="badge rounded-pill bg-dark-subtle text-dark px-3 py-2">Anulowana</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="text-center p-5">
-                    <img src="/api/placeholder/240/140" alt="Brak faktur" class="mb-3 img-fluid" style="max-width: 150px; opacity: 0.5;">
-                    <p class="mb-0 text-muted">Brak faktur. Utwórz swoją pierwszą fakturę!</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Faktury z bliskim terminem płatności -->
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-            <div class="card-header bg-white p-4 border-0">
-                <h5 class="fw-bold mb-0">
-                    <i class="fas fa-calendar-alt text-primary me-2"></i>Zbliżające się terminy płatności
-                </h5>
-            </div>
-            <div class="card-body p-0">
-                {% if upcoming_invoices %}
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="border-0 ps-4">Numer</th>
-                                <th class="border-0">Klient</th>
-                                <th class="border-0">Termin</th>
-                                <th class="border-0 pe-4">Kwota</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for invoice in upcoming_invoices %}
-                            <tr>
-                                <td class="ps-4">
-                                    <a href="{{ url_for('invoice.view', invoice_id=invoice.id) }}" class="fw-semibold text-decoration-none">
-                                        {{ invoice.invoice_number }}
-                                    </a>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-circle bg-light text-primary me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border-radius: 50%;">
-                                            {{ invoice.client.name[:1] }}
-                                        </div>
-                                        <span>{{ invoice.client.name }}</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="d-flex align-items-center">
-                                        <i class="fas fa-calendar-day text-muted me-2"></i>
-                                        {{ invoice.due_date.strftime('%d.%m.%Y') }}
-                                    </span>
-                                </td>
-                                <td class="pe-4 fw-semibold">{{ "%.2f"|format(invoice.total) }} zł</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="text-center p-5">
-                    <img src="/api/placeholder/240/140" alt="Brak zbliżających się płatności" class="mb-3 img-fluid" style="max-width: 150px; opacity: 0.5;">
-                    <p class="mb-0 text-muted">Brak faktur z bliskim terminem płatności.</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-     // Efekty dla kart w widżecie
-     document.addEventListener('DOMContentLoaded', function() {
-      // Efekt hover dla kart
-      document.querySelectorAll('.hover-card').forEach(el => {
-        el.addEventListener('mouseenter', () => {
-          el.style.transform = 'translateY(-5px)';
-          el.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
-          el.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.07)';
+    // Efekty dla kart w widżecie
+    document.addEventListener('DOMContentLoaded', function () {
+        // Efekt hover dla kart
+        document.querySelectorAll('.hover-card').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                el.style.transform = 'translateY(-5px)';
+                el.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
+                el.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.07)';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = 'translateY(0)';
+                el.style.boxShadow = '';
+            });
         });
-        el.addEventListener('mouseleave', () => {
-          el.style.transform = 'translateY(0)';
-          el.style.boxShadow = '';
+
+        // Efekt hover dla przycisków
+        document.querySelectorAll('.hover-lift').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                el.style.transform = 'translateY(-3px)';
+                el.style.transition = 'transform 0.3s ease';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = 'translateY(0)';
+            });
         });
-      });
-      
-      // Efekt hover dla przycisków
-      document.querySelectorAll('.hover-lift').forEach(el => {
-        el.addEventListener('mouseenter', () => {
-          el.style.transform = 'translateY(-3px)';
-          el.style.transition = 'transform 0.3s ease';
+
+        // Zapobieganie przekierowaniu przy kliknięciu przycisków wewnątrz karty
+        document.querySelectorAll('.no-link-click').forEach(el => {
+            el.addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
         });
-        el.addEventListener('mouseleave', () => {
-          el.style.transform = 'translateY(0)';
-        });
-      });
-      
-      // Zapobieganie przekierowaniu przy kliknięciu przycisków wewnątrz karty
-      document.querySelectorAll('.no-link-click').forEach(el => {
-        el.addEventListener('click', function(e) {
-          e.stopPropagation();
-        });
-      });
     });
-    
-    document.addEventListener('DOMContentLoaded', function() {
+
+    document.addEventListener('DOMContentLoaded', function () {
         // Efekty animacji przy ładowaniu strony
         document.querySelectorAll('.hover-lift').forEach(el => {
             el.addEventListener('mouseenter', () => {
@@ -460,13 +207,13 @@
             const target = parseInt(counter.innerText);
             let count = 0;
             const duration = 1500;
-            const frameDuration = 1000/60;
+            const frameDuration = 1000 / 60;
             const totalFrames = Math.round(duration / frameDuration);
             const counterAnimation = setInterval(() => {
                 count++;
                 const progress = count / totalFrames;
                 const currentCount = Math.round(progress * target);
-                
+
                 if (count === totalFrames) {
                     clearInterval(counterAnimation);
                     counter.innerText = target;
@@ -474,118 +221,6 @@
                     counter.innerText = currentCount;
                 }
             }, frameDuration);
-        });
-
-        // Dane dla wykresu
-        const monthlyData = {{ monthly_revenue|tojson }};
-        
-        // Przygotuj dane dla wykresu
-        const labels = monthlyData.map(m => m.month);
-        const values = monthlyData.map(m => m.total);
-        
-        // Gradient dla wykresu
-        const ctx = document.getElementById('monthlyRevenueChart').getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-        gradient.addColorStop(0, 'rgba(78, 115, 223, 0.6)');
-        gradient.addColorStop(1, 'rgba(78, 115, 223, 0.05)');
-        
-        // Skonfiguruj wykres
-        let chartType = 'bar';
-        const chartConfig = {
-            type: chartType,
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Przychód (PLN)',
-                    data: values,
-                    backgroundColor: gradient,
-                    borderColor: 'rgba(78, 115, 223, 1)',
-                    borderWidth: 2,
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: 'rgba(78, 115, 223, 1)',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    tension: 0.3,
-                    fill: 'start'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            borderDash: [4, 4],
-                            drawBorder: false
-                        },
-                        ticks: {
-                            padding: 10,
-                            color: '#777',
-                            font: {
-                                size: 11
-                            },
-                            callback: function(value) {
-                                return value.toLocaleString() + ' zł';
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false,
-                            drawBorder: false
-                        },
-                        ticks: {
-                            padding: 10,
-                            color: '#777',
-                            font: {
-                                size: 11
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        padding: 12,
-                        cornerRadius: 8,
-                        titleFont: {
-                            size: 14
-                        },
-                        bodyFont: {
-                            size: 13
-                        },
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                label += context.parsed.y.toLocaleString() + ' zł';
-                                return label;
-                            }
-                        }
-                    }
-                }
-            }
-        };
-        
-        const myChart = new Chart(ctx, chartConfig);
-        
-        // Przełączanie typu wykresu
-        document.getElementById('chartView').addEventListener('click', function() {
-            myChart.config.type = 'bar';
-            myChart.data.datasets[0].fill = false;
-            myChart.update();
-        });
-        
-        document.getElementById('chartViewLine').addEventListener('click', function() {
-            myChart.config.type = 'line';
-            myChart.data.datasets[0].fill = 'start';
-            myChart.update();
         });
     });
 </script>

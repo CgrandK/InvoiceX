@@ -12,26 +12,15 @@ invoicex/
 │   ├── models/                   # Modele bazy danych
 │   │   ├── __init__.py           # Eksport modeli
 │   │   ├── user.py               # Model użytkownika
-│   │   ├── client.py             # Model klienta
-│   │   ├── invoice.py            # Model faktury
-│   │   ├── invoice_item.py       # Model pozycji faktury
 │   │   ├── contact.py            # Model kontaktu (dla modułu pożyczek)
 │   │   └── transaction.py        # Model transakcji (dla modułu pożyczek)
 │   ├── routes/                   # Kontrolery (widoki/trasy)
 │   │   ├── __init__.py           # Eksport kontrolerów
 │   │   ├── auth.py               # Kontroler autoryzacji
 │   │   ├── dashboard.py          # Kontroler dashboardu
-│   │   ├── invoice.py            # Kontroler faktur
-│   │   ├── client.py             # Kontroler klientów
-│   │   ├── reports.py            # Kontroler raportów
 │   │   ├── contact.py            # Kontroler kontaktów (dla modułu pożyczek)
 │   │   ├── transaction.py        # Kontroler transakcji (dla modułu pożyczek)
 │   │   └── errors.py             # Obsługa błędów
-│   ├── services/                 # Usługi biznesowe
-│   │   ├── __init__.py
-│   │   ├── invoice_generator.py  # Generator PDF faktur
-│   │   ├── invoice_numbering.py  # Generowanie numerów faktur
-│   │   └── payment_integration.py # Integracja z systemami płatności
 │   ├── static/                   # Pliki statyczne
 │   │   ├── css/                  # Style CSS
 │   │   │   └── style.css         # Główny plik stylów
@@ -49,16 +38,6 @@ invoicex/
 │       │   └── change_password.html # Zmiana hasła
 │       ├── dashboard/            # Szablony dashboardu
 │       │   ├── index.html        # Strona główna dashboardu
-│       │   ├── invoices.html     # Lista faktur
-│       │   └── clients.html      # Lista klientów
-│       ├── invoice/              # Szablony faktur
-│       │   ├── create.html       # Tworzenie faktury
-│       │   ├── edit.html         # Edycja faktury
-│       │   └── view.html         # Podgląd faktury
-│       ├── reports/              # Szablony raportów
-│       │   ├── index.html        # Strona główna raportów
-│       │   ├── monthly.html      # Raport miesięczny
-│       │   └── client.html       # Raport klienta
 │       ├── contact/              # Szablony kontaktów (dla modułu pożyczek)
 │       │   ├── index.html        # Lista kontaktów
 │       │   ├── form.html         # Formularz kontaktu
@@ -96,24 +75,6 @@ Modele reprezentują strukturę bazy danych i relacje między obiektami:
 1. **User** (`user.py`): 
    - Przechowuje dane użytkownika (dane logowania, dane kontaktowe, dane firmowe)
    - Dziedziczy po `UserMixin` z Flask-Login dla obsługi autoryzacji
-   - Powiązany z `Client` i `Invoice` relacją one-to-many
-
-2. **Client** (`client.py`):
-   - Przechowuje dane klienta (nazwa, adres, dane kontaktowe)
-   - Powiązany z `User` relacją many-to-one
-   - Powiązany z `Invoice` relacją one-to-many
-
-3. **Invoice** (`invoice.py`):
-   - Przechowuje dane faktury (numer, daty, kwoty, status)
-   - Zawiera stałe `InvoiceStatus` i `PaymentMethod` definiujące możliwe wartości
-   - Powiązany z `User` i `Client` relacjami many-to-one
-   - Powiązany z `InvoiceItem` relacją one-to-many
-   - Implementuje metody do obliczania wartości (`calculate_totals`) i zarządzania statusem faktury
-
-4. **InvoiceItem** (`invoice_item.py`):
-   - Przechowuje pozycje faktury (opis, ilość, cena, podatek)
-   - Powiązany z `Invoice` relacją many-to-one
-   - Implementuje metodę obliczania wartości pozycji (`calculate_total`)
 
 5. **Contact** (`contact.py`):
    - Przechowuje dane kontaktu (nazwa, email, telefon, notatki)
@@ -146,9 +107,6 @@ Kontrolery obsługują zapytania HTTP, przetwarzają dane i renderują szablony:
    - Implementuje logikę generowania PDF i eksportu faktur
    - Obsługuje oznaczanie faktur jako opłacone i generowanie linków do płatności
 
-4. **client.py**:
-   - Obsługuje CRUD dla klientów
-   - Dostarcza API do pobierania danych klienta (dla JavaScript)
 
 5. **reports.py**:
    - Generuje raporty miesięczne i raporty klientów
@@ -270,17 +228,6 @@ Szablony HTML używają silnika Jinja2 do renderowania interfejsu użytkownika:
 3. **Dashboard**:
    - Użytkownik widzi podsumowanie i statystyki (`dashboard.py`)
    - Może przejść do list faktur, klientów i kontaktów
-
-4. **Zarządzanie klientami**:
-   - Użytkownik dodaje, edytuje, wyświetla klientów (`client.py`)
-   - Dane klientów są zapisywane w bazie danych (`Client` model)
-
-5. **Zarządzanie fakturami**:
-   - Użytkownik tworzy nową fakturę (`invoice.py`)
-   - Wybiera klienta, dodaje pozycje, ustawia daty i status
-   - Aplikacja oblicza wartości i generuje unikalny numer faktury
-   - Faktura jest zapisywana w bazie danych (`Invoice` i `InvoiceItem` modele)
-   - Użytkownik może wygenerować PDF, oznaczyć fakturę jako opłaconą, wysłać link do płatności
 
 6. **Zarządzanie kontaktami i bilansem finansowym**:
    - Użytkownik dodaje, edytuje, wyświetla kontakty (`contact.py`)

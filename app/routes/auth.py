@@ -24,8 +24,6 @@ class RegistrationForm(FlaskForm):
         'Powtórz hasło', validators=[DataRequired(), EqualTo('password')])
     first_name = StringField('Imię', validators=[DataRequired()])
     last_name = StringField('Nazwisko', validators=[DataRequired()])
-    company_name = StringField('Nazwa firmy')
-    tax_id = StringField('NIP')
     submit = SubmitField('Zarejestruj')
 
     def validate_email(self, email):
@@ -36,14 +34,6 @@ class RegistrationForm(FlaskForm):
 class ProfileForm(FlaskForm):
     first_name = StringField('Imię', validators=[DataRequired()])
     last_name = StringField('Nazwisko', validators=[DataRequired()])
-    company_name = StringField('Nazwa firmy')
-    tax_id = StringField('NIP')
-    address_line1 = StringField('Adres - linia 1')
-    address_line2 = StringField('Adres - linia 2')
-    city = StringField('Miasto')
-    postal_code = StringField('Kod pocztowy')
-    country = StringField('Kraj')
-    phone = StringField('Telefon')
     submit = SubmitField('Zapisz zmiany')
 
 class PasswordChangeForm(FlaskForm):
@@ -98,8 +88,6 @@ def register():
             password=form.password.data,
             first_name=form.first_name.data,
             last_name=form.last_name.data,
-            company_name=form.company_name.data,
-            tax_id=form.tax_id.data,
             confirmed=True  # Dla uproszczenia, w produkcji powinien być proces weryfikacji email
         )
         
@@ -119,14 +107,6 @@ def profile():
     if form.validate_on_submit():
         current_user.first_name = form.first_name.data
         current_user.last_name = form.last_name.data
-        current_user.company_name = form.company_name.data
-        current_user.tax_id = form.tax_id.data
-        current_user.address_line1 = form.address_line1.data
-        current_user.address_line2 = form.address_line2.data
-        current_user.city = form.city.data
-        current_user.postal_code = form.postal_code.data
-        current_user.country = form.country.data
-        current_user.phone = form.phone.data
         
         db.session.commit()
         flash('Profil zaktualizowany pomyślnie', 'success')

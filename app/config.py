@@ -23,18 +23,6 @@ class Config:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@invoicex.com')
     
-    # Ustawienia faktur
-    INVOICE_PREFIX = os.environ.get('INVOICE_PREFIX', 'INV-')
-    INVOICE_START_NUMBER = int(os.environ.get('INVOICE_START_NUMBER', 1000))
-    INVOICE_DEFAULT_DUE_DAYS = int(os.environ.get('INVOICE_DEFAULT_DUE_DAYS', 14))
-    
-    # Integracje płatności
-    STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
-    STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
-    PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID')
-    PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET')
-    PAYPAL_MODE = os.environ.get('PAYPAL_MODE', 'sandbox')  # 'sandbox' or 'live'
-    
     # Ustawienia upload-u plików
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB
     UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/uploads')

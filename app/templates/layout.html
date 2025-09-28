@@ -1,22 +1,24 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ title }} - {{ app_name }}{% endblock %}</title>
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts - Poppins & Inter -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap">
-    
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    
+
     <style>
         :root {
             --primary-color: #4e73df;
@@ -31,7 +33,7 @@
             --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             --nav-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
         }
-        
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--body-bg);
@@ -39,26 +41,32 @@
             display: flex;
             flex-direction: column;
         }
-        
-        h1, h2, h3, h4, h5, h6, .navbar-brand {
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .navbar-brand {
             font-family: 'Poppins', sans-serif;
             font-weight: 600;
         }
-        
+
         .navbar {
             padding: 0.8rem 1rem;
             box-shadow: var(--nav-shadow);
         }
-        
+
         .navbar-dark {
             background: linear-gradient(135deg, #4e73df 0%, #2246d2 100%);
         }
-        
+
         .navbar-brand {
             font-size: 1.5rem;
             font-weight: 700;
         }
-        
+
         .nav-link {
             font-size: 0.95rem;
             font-weight: 500;
@@ -70,7 +78,7 @@
         .navbar-dark .nav-link:hover {
             color: rgba(255, 255, 255, 1) !important;
         }
-        
+
         .navbar-dark .nav-link::after {
             content: '';
             position: absolute;
@@ -84,7 +92,7 @@
             opacity: 0;
             border-radius: 3px;
         }
-        
+
         .navbar-dark .nav-link:hover::after {
             width: 60%;
             opacity: 0.7;
@@ -98,48 +106,48 @@
             text-align: center;
             margin-right: 8px;
         }
-        
+
         .dropdown-menu {
             border: none;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
             border-radius: 10px;
             padding: 0.5rem;
         }
-        
+
         .dropdown-item {
             padding: 0.65rem 1rem;
             border-radius: 8px;
             transition: all 0.2s;
             font-size: 0.9rem;
         }
-        
+
         .dropdown-item:hover {
             background-color: rgba(78, 115, 223, 0.1);
             transform: translateX(3px);
         }
-        
+
         .dropdown-divider {
             margin: 0.3rem 0;
         }
-        
+
         .main-content {
             flex: 1;
             padding: 2rem 0;
         }
-        
+
         .alert {
             border: none;
             border-radius: 10px;
             padding: 1rem 1.25rem;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
         }
-        
+
         footer {
             background-color: #fff;
             padding: 1.5rem 0;
             box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.025);
         }
-        
+
         /* User Avatar */
         .user-avatar {
             width: 36px;
@@ -153,12 +161,12 @@
             font-weight: 600;
             color: white;
         }
-        
+
         /* Pulse Notification */
         .notification-badge {
             position: relative;
         }
-        
+
         .notification-badge::after {
             content: '';
             position: absolute;
@@ -170,37 +178,42 @@
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
-        
+
         @keyframes pulse {
             0% {
                 transform: scale(0.95);
                 box-shadow: 0 0 0 0 rgba(231, 74, 59, 0.7);
             }
+
             70% {
                 transform: scale(1);
                 box-shadow: 0 0 0 10px rgba(231, 74, 59, 0);
             }
+
             100% {
                 transform: scale(0.95);
                 box-shadow: 0 0 0 0 rgba(231, 74, 59, 0);
             }
         }
     </style>
-    
+
     {% block styles %}{% endblock %}
 </head>
+
 <body>
     {% if current_user.is_authenticated %}
     <!-- Nagłówek dla zalogowanych użytkowników -->
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard.index') }}">
-                <div class="brand-icon me-2 d-flex align-items-center justify-content-center bg-white text-primary rounded" style="width: 38px; height: 38px;">
+                <div class="brand-icon me-2 d-flex align-items-center justify-content-center bg-white text-primary rounded"
+                    style="width: 38px; height: 38px;">
                     <i class="fas fa-file-invoice-dollar"></i>
                 </div>
                 {{ app_name }}
             </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarMain">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarMain">
@@ -211,24 +224,6 @@
                             Dashboard
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center" href="{{ url_for('dashboard.invoices') }}">
-                            <span class="nav-icon"><i class="fas fa-file-invoice"></i></span>
-                            Faktury
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center" href="{{ url_for('dashboard.clients') }}">
-                            <span class="nav-icon"><i class="fas fa-users"></i></span>
-                            Klienci
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center" href="{{ url_for('reports.index') }}">
-                            <span class="nav-icon"><i class="fas fa-chart-bar"></i></span>
-                            Raporty
-                        </a>
-                    </li>
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item me-2">
@@ -237,17 +232,7 @@
                         </a>
                     </li>
                     <li class="nav-item dropdown me-2">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center px-3 rounded bg-white bg-opacity-10" 
-                           href="#" id="navbarDropdownCreate" role="button" 
-                           data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-plus me-2"></i>Nowy
-                        </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownCreate">
-                            <li>
-                                <a class="dropdown-item d-flex align-items-center" href="{{ url_for('invoice.create') }}">
-                                    <i class="fas fa-file-invoice text-primary me-2"></i>Faktura
-                                </a>
-                            </li>
                             <li>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <i class="fas fa-user-plus text-primary me-2"></i>Klient
@@ -256,11 +241,11 @@
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" 
-                           id="navbarDropdownUser" role="button" 
-                           data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdownUser"
+                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="user-avatar">
-                                {{ current_user.first_name[0] }}{{ current_user.last_name[0] if current_user.last_name else "" }}
+                                {{ current_user.first_name[0] }}{{ current_user.last_name[0] if current_user.last_name
+                                else "" }}
                             </div>
                             <span>{{ current_user.first_name }}</span>
                         </a>
@@ -271,11 +256,14 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex align-items-center" href="{{ url_for('auth.change_password') }}">
+                                <a class="dropdown-item d-flex align-items-center"
+                                    href="{{ url_for('auth.change_password') }}">
                                     <i class="fas fa-key text-primary me-2"></i>Zmień hasło
                                 </a>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li>
                                 <a class="dropdown-item d-flex align-items-center" href="{{ url_for('auth.logout') }}">
                                     <i class="fas fa-sign-out-alt text-danger me-2"></i>Wyloguj
@@ -292,23 +280,27 @@
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('auth.login') }}">
-                <div class="brand-icon me-2 d-flex align-items-center justify-content-center bg-white text-primary rounded" style="width: 38px; height: 38px;">
+                <div class="brand-icon me-2 d-flex align-items-center justify-content-center bg-white text-primary rounded"
+                    style="width: 38px; height: 38px;">
                     <i class="fas fa-file-invoice-dollar"></i>
                 </div>
                 {{ app_name }}
             </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarMain">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item me-3">
-                        <a class="nav-link btn btn-outline-light px-3 py-2 d-flex align-items-center" href="{{ url_for('auth.login') }}">
+                        <a class="nav-link btn btn-outline-light px-3 py-2 d-flex align-items-center"
+                            href="{{ url_for('auth.login') }}">
                             <i class="fas fa-sign-in-alt me-2"></i>Logowanie
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link btn btn-light text-primary px-3 py-2 d-flex align-items-center" href="{{ url_for('auth.register') }}">
+                        <a class="nav-link btn btn-light text-primary px-3 py-2 d-flex align-items-center"
+                            href="{{ url_for('auth.register') }}">
                             <i class="fas fa-user-plus me-2"></i>Rejestracja
                         </a>
                     </li>
@@ -321,23 +313,23 @@
     <!-- Komunikaty flash -->
     <div class="container mt-4">
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show d-flex align-items-center">
-                        {% if category == 'success' %}
-                            <i class="fas fa-check-circle me-2 fs-5 text-success"></i>
-                        {% elif category == 'warning' %}
-                            <i class="fas fa-exclamation-triangle me-2 fs-5 text-warning"></i>
-                        {% elif category == 'danger' %}
-                            <i class="fas fa-times-circle me-2 fs-5 text-danger"></i>
-                        {% else %}
-                            <i class="fas fa-info-circle me-2 fs-5 text-info"></i>
-                        {% endif %}
-                        <div class="flex-grow-1">{{ message }}</div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show d-flex align-items-center">
+            {% if category == 'success' %}
+            <i class="fas fa-check-circle me-2 fs-5 text-success"></i>
+            {% elif category == 'warning' %}
+            <i class="fas fa-exclamation-triangle me-2 fs-5 text-warning"></i>
+            {% elif category == 'danger' %}
+            <i class="fas fa-times-circle me-2 fs-5 text-danger"></i>
+            {% else %}
+            <i class="fas fa-info-circle me-2 fs-5 text-info"></i>
             {% endif %}
+            <div class="flex-grow-1">{{ message }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
         {% endwith %}
     </div>
 
@@ -353,7 +345,8 @@
                 <div class="mb-2 mb-md-0">
                     <a href="#" class="text-decoration-none">
                         <div class="d-flex align-items-center">
-                            <div class="footer-logo d-flex align-items-center justify-content-center bg-primary text-white rounded me-2" style="width: 32px; height: 32px;">
+                            <div class="footer-logo d-flex align-items-center justify-content-center bg-primary text-white rounded me-2"
+                                style="width: 32px; height: 32px;">
                                 <i class="fas fa-file-invoice-dollar fa-sm"></i>
                             </div>
                             <span class="text-dark fw-bold">{{ app_name }}</span>
@@ -374,34 +367,34 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- jQuery (dla niektórych interakcji) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+
     <!-- Efekty i animacje -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Dodanie klasy active do aktywnego linku w menu
             const currentLocation = window.location.pathname;
             const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
-            
+
             navLinks.forEach(link => {
                 const linkPath = link.getAttribute('href');
-                if (linkPath === currentLocation || 
-                   (currentLocation.includes(linkPath) && linkPath !== '/')) {
+                if (linkPath === currentLocation ||
+                    (currentLocation.includes(linkPath) && linkPath !== '/')) {
                     link.classList.add('active');
                     link.style.color = '#ffffff';
                     link.style.background = 'rgba(255, 255, 255, 0.15)';
                     link.style.borderRadius = '6px';
                 }
             });
-            
+
             // Animacja dla komunikatów flash
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
                 // Dodaj klasę dla animacji wejścia
                 alert.classList.add('animate-alert');
-                
+
                 // Automatyczne ukrywanie alertów po 5 sekundach
                 setTimeout(() => {
                     if (alert) {
@@ -412,10 +405,11 @@
             });
         });
     </script>
-    
+
     <!-- Custom JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    
+
     {% block scripts %}{% endblock %}
 </body>
+
 </html>
