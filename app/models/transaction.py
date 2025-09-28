@@ -9,6 +9,12 @@ class TransactionType(Enum):
     RECEIVED_FROM = 3  # Otrzymałem spłatę od
     REPAID_TO = 4      # Oddałem komuś
 
+    def balance_multiplier(self):
+        """Zwraca mnożnik wykorzystywany przy obliczaniu salda."""
+        if self in (TransactionType.LENT_TO, TransactionType.REPAID_TO):
+            return 1
+        return -1
+
 class Transaction(db.Model):
     __tablename__ = 'transactions'
 
@@ -40,13 +46,8 @@ class Transaction(db.Model):
         
         balance = 0
         for transaction in transactions:
-            if transaction.transaction_type == TransactionType.LENT_TO:
-                # Pożyczyłem komuś (+)
-                balance += float(transaction.amount)
-            elif transaction.transaction_type == TransactionType.RECEIVED_FROM:
-                # Otrzymałem spłatę (-)
-                balance -= float(transaction.amount)
-        
+            balance += float(transaction.amount) * transaction.transaction_type.balance_multiplier()
+
         return balance
 
     @staticmethod
