@@ -1,5 +1,69 @@
-venv/
+# --- Python / build ---
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# --- Virtualenvs ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Flask / lokalne dane ---
+# cała instancja aplikacji (lokalne DB, sekrety itp.)
 instance/
-*.pyc
-/instance
+# jeśli chcesz zachować pusty katalog 'instance', dodaj plik:
+#   instance/.gitkeep
+# i odkomentuj poniższe dwie linie:
+# instance/*
+# !instance/.gitkeep
+
+# lokalne bazy i logi (na wszelki wypadek)
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# --- Sekrety / konfiguracje lokalne ---
+.env
+.env.*
+*.env
+*.secret
+secrets.*
+
+# --- Testy / raporty ---
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# --- Lintery / narzędzia ---
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.tox/
+.cache/
+
+# --- IDE / OS ---
+.vscode/
+.idea/
+*.code-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*.bak
+
+# --- Frontend (jeśli występuje) ---
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-lock.yaml
+
