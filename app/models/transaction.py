@@ -54,6 +54,24 @@ class Transaction(db.Model):
         return balance
 
     @staticmethod
+    def get_balance_delta(transaction_type, amount):
+        """
+        Zwraca zmianę salda dla danego typu transakcji.
+        """
+        mapping = {
+            TransactionType.LENT_TO: 1,
+            TransactionType.BORROWED_FROM: -1,
+            TransactionType.RECEIVED_FROM: -1,
+            TransactionType.REPAID_TO: 1,
+        }
+
+        multiplier = mapping.get(transaction_type)
+        if multiplier is None:
+            return 0
+
+        return multiplier * float(amount)
+
+    @staticmethod
     def get_transaction_history(user_id, contact_id):
         """
         Zwraca historię transakcji pomiędzy użytkownikiem a kontaktem,
