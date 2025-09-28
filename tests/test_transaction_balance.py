@@ -60,7 +60,7 @@ def test_balance_with_all_transaction_types(app_context):
     db.session.add_all(transactions)
     db.session.commit()
 
-    expected_balance = 40.0
+    expected_balance = Decimal('40.00')
 
-    assert Transaction.get_balance_with_contact(user.id, contact.id) == pytest.approx(expected_balance)
-    assert contact.get_balance() == pytest.approx(expected_balance)
+    assert Transaction.get_balance_with_contact(user.id, contact.id) == expected_balance
+    assert contact.get_balance() == expected_balance

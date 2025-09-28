@@ -1,7 +1,9 @@
 # app/models/transaction.py
 from datetime import datetime
-from app import db
+from decimal import Decimal
 from enum import Enum
+
+from app import db
 
 class TransactionType(Enum):
     BORROWED_FROM = 1  # Pożyczyłem od (ktoś pożyczył mi)
@@ -9,11 +11,12 @@ class TransactionType(Enum):
     RECEIVED_FROM = 3  # Otrzymałem spłatę od
     REPAID_TO = 4      # Oddałem komuś
 
+    @property
     def balance_multiplier(self):
         """Zwraca mnożnik wykorzystywany przy obliczaniu salda."""
         if self in (TransactionType.LENT_TO, TransactionType.REPAID_TO):
-            return 1
-        return -1
+            return Decimal(1)
+        return Decimal(-1)
 
 class Transaction(db.Model):
     __tablename__ = 'transactions'
@@ -44,9 +47,9 @@ class Transaction(db.Model):
         """
         transactions = Transaction.query.filter_by(user_id=user_id, contact_id=contact_id).all()
         
-        balance = 0
+        balance = Decimal("0")
         for transaction in transactions:
-            balance += float(transaction.amount) * transaction.transaction_type.balance_multiplier()
+            balance += transaction.amount * transaction.transaction_type.balance_multiplier
 
         return balance
 
