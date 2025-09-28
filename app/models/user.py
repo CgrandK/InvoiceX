@@ -81,16 +81,9 @@ class User(db.Model, UserMixin):
         from app.models.transaction import Transaction, TransactionType
         
         transactions = Transaction.query.filter_by(user_id=self.id).all()
-        
+
         balance = 0
         for transaction in transactions:
-            if transaction.transaction_type == TransactionType.LENT_TO:
-                balance += float(transaction.amount)
-            elif transaction.transaction_type == TransactionType.BORROWED_FROM:
-                balance -= float(transaction.amount)
-            elif transaction.transaction_type == TransactionType.REPAID_TO:
-                balance -= float(transaction.amount)
-            elif transaction.transaction_type == TransactionType.RECEIVED_FROM:
-                balance += float(transaction.amount)
-        
+            balance += Transaction.get_balance_delta(transaction.transaction_type, transaction.amount)
+
         return balance

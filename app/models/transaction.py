@@ -37,17 +37,30 @@ class Transaction(db.Model):
         Ujemny bilans oznacza, że użytkownik jest winien kontaktowi.
         """
         transactions = Transaction.query.filter_by(user_id=user_id, contact_id=contact_id).all()
-        
+
         balance = 0
         for transaction in transactions:
-            if transaction.transaction_type == TransactionType.LENT_TO:
-                # Pożyczyłem komuś (+)
-                balance += float(transaction.amount)
-            elif transaction.transaction_type == TransactionType.RECEIVED_FROM:
-                # Otrzymałem spłatę (-)
-                balance -= float(transaction.amount)
-        
+            balance += Transaction.get_balance_delta(transaction.transaction_type, transaction.amount)
+
         return balance
+
+    @staticmethod
+    def get_balance_delta(transaction_type, amount):
+        """
+        Zwraca zmianę salda dla danego typu transakcji.
+        """
+        mapping = {
+            TransactionType.LENT_TO: 1,
+            TransactionType.BORROWED_FROM: -1,
+            TransactionType.RECEIVED_FROM: -1,
+            TransactionType.REPAID_TO: 1,
+        }
+
+        multiplier = mapping.get(transaction_type)
+        if multiplier is None:
+            return 0
+
+        return multiplier * float(amount)
 
     @staticmethod
     def get_transaction_history(user_id, contact_id):
