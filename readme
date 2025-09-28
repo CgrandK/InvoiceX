@@ -1,414 +1,128 @@
-# InvoiceX - System Fakturowania dla Freelancerów
+# InvoiceX - Zarządzanie kontaktami i saldem pożyczek
 
-InvoiceX to aplikacja webowa stworzona przy użyciu frameworka Flask, która umożliwia freelancerom i małym firmom zarządzanie fakturami. System pozwala na tworzenie, edytowanie i śledzenie faktur, zarządzanie klientami, śledzenie pożyczek oraz generowanie raportów.
+InvoiceX to aplikacja webowa oparta na Flasku, która skupia się na czterech kluczowych modułach:
+
+- **Uwierzytelnianie** — logowanie, rejestracja i zarządzanie profilem użytkownika z wykorzystaniem Flask-Login oraz bezpiecznej zmiany hasła.
+- **Kontakty** — przechowywanie podstawowych danych kontrahentów, obliczanie indywidualnych sald i kontrola możliwości usuwania kontaktów powiązanych z transakcjami.
+- **Transakcje** — rejestrowanie pożyczek i spłat między użytkownikiem a kontaktami, z wyborem typu operacji i automatycznym naliczaniem daty.
+- **Dashboard** — panel startowy prezentujący podsumowanie pożyczek, kwoty do odzyskania i do zapłaty oraz najważniejsze kontakty z aktywnym saldem.
+
+Dzięki współpracy tych modułów użytkownik może w jednym miejscu śledzić przepływy finansowe z poszczególnymi kontaktami i natychmiast sprawdzać aktualne zobowiązania.
 
 ## Struktura projektu
 
 ```
 invoicex/
-├── app/                          # Główny katalog aplikacji
-│   ├── __init__.py               # Inicjalizacja aplikacji Flask
-│   ├── config.py                 # Konfiguracja dla różnych środowisk
-│   ├── models/                   # Modele bazy danych
-│   │   ├── __init__.py           # Eksport modeli
-│   │   ├── user.py               # Model użytkownika
-│   │   ├── contact.py            # Model kontaktu (dla modułu pożyczek)
-│   │   └── transaction.py        # Model transakcji (dla modułu pożyczek)
-│   ├── routes/                   # Kontrolery (widoki/trasy)
-│   │   ├── __init__.py           # Eksport kontrolerów
-│   │   ├── auth.py               # Kontroler autoryzacji
-│   │   ├── dashboard.py          # Kontroler dashboardu
-│   │   ├── contact.py            # Kontroler kontaktów (dla modułu pożyczek)
-│   │   ├── transaction.py        # Kontroler transakcji (dla modułu pożyczek)
-│   │   └── errors.py             # Obsługa błędów
-│   ├── static/                   # Pliki statyczne
-│   │   ├── css/                  # Style CSS
-│   │   │   └── style.css         # Główny plik stylów
-│   │   ├── js/                   # Skrypty JavaScript
-│   │   │   └── main.js           # Główny plik JS
-│   │   ├── fonts/                # Czcionki do generowania PDF
-│   │   │   ├── DejaVuSans.ttf
-│   │   │   └── DejaVuSans-Bold.ttf
-│   │   └── img/                  # Obrazy
-│   └── templates/                # Szablony HTML
-│       ├── auth/                 # Szablony autoryzacji
-│       │   ├── login.html        # Logowanie
-│       │   ├── register.html     # Rejestracja
-│       │   ├── profile.html      # Profil użytkownika
-│       │   └── change_password.html # Zmiana hasła
-│       ├── dashboard/            # Szablony dashboardu
-│       │   ├── index.html        # Strona główna dashboardu
-│       ├── contact/              # Szablony kontaktów (dla modułu pożyczek)
-│       │   ├── index.html        # Lista kontaktów
-│       │   ├── form.html         # Formularz kontaktu
-│       │   └── view.html         # Widok szczegółowy kontaktu
-│       ├── transaction/          # Szablony transakcji (dla modułu pożyczek)
-│       │   └── form.html         # Formularz transakcji
-│       ├── errors/               # Szablony błędów
-│       │   ├── 404.html          # Nie znaleziono
-│       │   ├── 403.html          # Dostęp zabroniony
-│       │   └── 500.html          # Błąd serwera
-│       └── layout.html           # Główny szablon
-├── migrations/                   # Migracje bazy danych
-│   ├── versions/                 # Wersje migracji
-│   │   └── 001_initial_migration.py # Początkowa migracja
-│   ├── env.py                    # Środowisko migracji
-│   └── alembic.ini               # Konfiguracja Alembic
-├── tests/                        # Testy
-│   ├── __init__.py
-│   ├── test_auth.py              # Testy autoryzacji
-│   ├── test_invoice.py           # Testy faktur
-│   └── test_reports.py           # Testy raportów
-├── .env                          # Zmienne środowiskowe
-├── .env.example                  # Przykładowe zmienne środowiskowe
-├── .gitignore                    # Ignorowane pliki
-├── requirements.txt              # Zależności Pythona
-└── run.py                        # Skrypt uruchamiający aplikację
+├── app/
+│   ├── __init__.py               # Tworzenie aplikacji i rejestracja rozszerzeń
+│   ├── config.py                 # Konfiguracje środowiskowe (SQLite domyślnie)
+│   ├── forms/                    # Formularze WTForms wykorzystywane w trasach
+│   │   ├── contact_form.py
+│   │   └── transaction_form.py
+│   ├── models/                   # Modele SQLAlchemy
+│   │   ├── __init__.py
+│   │   ├── contact.py
+│   │   ├── transaction.py
+│   │   └── user.py
+│   ├── routes/                   # Blueprinty Flask obsługujące logikę modułów
+│   │   ├── __init__.py
+│   │   ├── auth.py
+│   │   ├── contact.py
+│   │   ├── dashboard.py
+│   │   ├── errors.py
+│   │   └── transaction.py
+│   ├── static/                   # Zasoby statyczne (Bootstrap + niestandardowe style)
+│   │   ├── css/
+│   │   ├── fonts/
+│   │   └── js/
+│   └── templates/                # Szablony Jinja2 dla widoków
+│       ├── auth/
+│       ├── contact/
+│       ├── dashboard/
+│       ├── errors/
+│       ├── transaction/
+│       └── layout.html
+├── create_db.py                  # Skrypt tworzący bazę danych (SQLite)
+├── migrations/                   # Pliki migracji Alembic
+├── requirements.txt              # Lista zależności Pythona
+├── run.py                        # Uruchomienie aplikacji z odpowiednią konfiguracją
+└── readme                        # Ten plik
 ```
 
-## Kluczowe komponenty i ich powiązania
+## Kluczowe komponenty
 
 ### Modele (`app/models/`)
 
-Modele reprezentują strukturę bazy danych i relacje między obiektami:
+- **User** — obsługa kont użytkowników, logowania i podstawowych danych profilu.
+- **Contact** — przechowuje dane kontaktowe, a dzięki metodzie `get_balance()` oblicza aktualne saldo relacji finansowych.
+- **Transaction** — zapisuje operacje finansowe między użytkownikiem a kontaktem, wykorzystując enum `TransactionType` do rozróżniania pożyczek i spłat.
 
-1. **User** (`user.py`): 
-   - Przechowuje dane użytkownika (dane logowania, dane kontaktowe, dane firmowe)
-   - Dziedziczy po `UserMixin` z Flask-Login dla obsługi autoryzacji
+### Trasy (`app/routes/`)
 
-5. **Contact** (`contact.py`):
-   - Przechowuje dane kontaktu (nazwa, email, telefon, notatki)
-   - Powiązany z `User` relacją many-to-one
-   - Powiązany z `Transaction` relacją one-to-many
-   - Implementuje metodę pobierania salda (`get_balance`)
+- **auth.py** — logowanie, rejestracja, profil i zmiana hasła. Formularze zwalidowane przez WTForms zabezpieczają przed duplikacją adresów e-mail.
+- **contact.py** — lista kontaktów z wyliczonym saldem, formularze dodawania i edycji oraz widok historii transakcji dla pojedynczego kontaktu.
+- **transaction.py** — dodawanie, aktualizacja i usuwanie transakcji finansowych z przypisaniem typu operacji i kwoty.
+- **dashboard.py** — prezentacja podsumowania pożyczek (kwoty do odzyskania i do zapłaty) oraz szybki dostęp do kontaktów z aktywnymi saldami.
 
-6. **Transaction** (`transaction.py`):
-   - Przechowuje transakcje finansowe między użytkownikiem a kontaktem
-   - Zawiera enum `TransactionType` definiujący typy transakcji (LENT_TO, BORROWED_FROM, REPAID_TO, RECEIVED_FROM)
-   - Powiązany z `User` i `Contact` relacjami many-to-one
-   - Implementuje metody do obliczania bilansu (`get_balance_with_contact`)
+### Formularze (`app/forms/`)
 
-### Kontrolery/Trasy (`app/routes/`)
+- **ContactForm** — umożliwia dodawanie i edycję kontaktów (imię, email, telefon, notatki).
+- **TransactionForm** — pozwala określić kwotę, typ i opis transakcji oraz opcjonalnie ustawić datę operacji.
 
-Kontrolery obsługują zapytania HTTP, przetwarzają dane i renderują szablony:
+### Szablony i zasoby statyczne
 
-1. **auth.py**:
-   - Obsługuje rejestrację, logowanie, wylogowanie użytkowników
-   - Obsługuje zarządzanie profilem użytkownika i zmianę hasła
-   - Zabezpiecza dostęp do funkcji wymagających logowania (dekorator `@login_required`)
+Szablony Jinja2 w katalogu `app/templates/` definiują widoki dla modułów uwierzytelniania, dashboardu, kontaktów i transakcji. Pliki w `app/static/` zawierają style CSS, skrypty JS i czcionki używane w interfejsie (w tym wbudowane pliki DejaVuSans wykorzystywane w szablonach).
 
-2. **dashboard.py**:
-   - Wyświetla stronę główną dashboardu z podsumowaniem i statystykami
-   - Obsługuje listę faktur i klientów z filtrowaniem i paginacją
-   - Wyświetla widżet bilansu pożyczek
+## Śledzenie sald pożyczek
 
-3. **invoice.py**:
-   - Obsługuje CRUD (create, read, update, delete) dla faktur
-   - Implementuje logikę generowania PDF i eksportu faktur
-   - Obsługuje oznaczanie faktur jako opłacone i generowanie linków do płatności
+Połączone działanie modułów kontaktów i transakcji umożliwia dokładne monitorowanie zobowiązań finansowych:
 
-
-5. **reports.py**:
-   - Generuje raporty miesięczne i raporty klientów
-   - Obsługuje eksport danych do CSV i Excel
-
-6. **contact.py**:
-   - Obsługuje CRUD dla kontaktów
-   - Wyświetla listę kontaktów z saldem
-   - Pokazuje szczegóły kontaktu wraz z historią transakcji
-
-7. **transaction.py**:
-   - Obsługuje tworzenie, edycję i usuwanie transakcji finansowych
-   - Implementuje logikę dla różnych typów transakcji
-
-8. **errors.py**:
-   - Obsługuje strony błędów (404, 403, 500)
-
-### Usługi biznesowe (`app/services/`)
-
-Usługi implementują logikę biznesową niezależną od interfejsu HTTP:
-
-1. **invoice_generator.py**:
-   - Generuje faktury w formacie PDF przy użyciu biblioteki ReportLab
-   - Konfiguruje fonty, style i układ faktury
-   - Renderuje różne sekcje faktury (nagłówek, dane klienta, pozycje, podsumowanie)
-
-2. **invoice_numbering.py**:
-   - Generuje unikalne numery faktur według schematu: "FV numer/miesiąc/rok"
-   - Zapewnia konsekwencję i unikalność numerów
-
-3. **payment_integration.py**:
-   - Integruje się z systemami płatności (Stripe, PayPal)
-   - Tworzy linki do płatności i weryfikuje status płatności
-
-### Szablony (`app/templates/`)
-
-Szablony HTML używają silnika Jinja2 do renderowania interfejsu użytkownika:
-
-1. **layout.html**:
-   - Główny szablon aplikacji definiujący wspólny układ
-   - Zawiera nagłówek, nawigację, stopkę i miejsce na treść (`{% block content %}{% endblock %}`)
-   - Ładuje CSS i JavaScript
-
-2. **Szablony autoryzacji** (`auth/`):
-   - Formularze do logowania, rejestracji i zarządzania profilem
-
-3. **Szablony dashboardu** (`dashboard/`):
-   - Widoki dla strony głównej i list faktur/klientów
-   - Zawiera widżet bilansu pożyczek
-
-4. **Szablony faktur** (`invoice/`):
-   - Formularze do tworzenia/edycji faktur
-   - Widok szczegółowy faktury
-
-5. **Szablony raportów** (`reports/`):
-   - Widoki dla różnych rodzajów raportów i eksportu
-
-6. **Szablony kontaktów** (`contact/`):
-   - Lista kontaktów z informacją o saldzie
-   - Formularz dodawania/edycji kontaktu
-   - Widok szczegółowy kontaktu z historią transakcji
-
-7. **Szablony transakcji** (`transaction/`):
-   - Formularz dodawania/edycji transakcji finansowej
-
-### Pliki statyczne (`app/static/`)
-
-1. **CSS** (`css/style.css`):
-   - Definiuje niestandardowe style aplikacji
-   - Rozszerza style Bootstrap
-
-2. **JavaScript** (`js/main.js`):
-   - Implementuje interaktywne funkcje (dodawanie/usuwanie pozycji faktury, walidacja)
-   - Oblicza wartości faktury w czasie rzeczywistym
-   - Obsługuje AJAX dla dynamicznego pobierania danych
-
-3. **Czcionki** (`fonts/`):
-   - Zawiera czcionki z obsługą polskich znaków do generowania PDF
-
-### Konfiguracja (`app/config.py`)
-
-- Definiuje klasy konfiguracyjne dla różnych środowisk (rozwój, testowanie, produkcja)
-- Wczytuje zmienne środowiskowe z pliku `.env`
-- Konfiguruje bazę danych, JWT, e-mail, i inne ustawienia aplikacji
-
-### Inicjalizacja aplikacji (`app/__init__.py`)
-
-- Tworzy aplikację Flask i inicjalizuje rozszerzenia
-- Rejestruje blueprinty (kontrolery)
-- Konfiguruje obsługę błędów i kontekst globalny
-
-### Skrypt startowy (`run.py`)
-
-- Wczytuje zmienne środowiskowe
-- Tworzy instancję aplikacji z odpowiednią konfiguracją
-- Definiuje kontekst dla powłoki Flask (dla `flask shell`)
-- Uruchamia serwer deweloperski
-
-### Migracje bazy danych (`migrations/`)
-
-- Zawiera wersje migracji bazy danych
-- Umożliwia ewolucję schematu bazy danych bez utraty danych
-
-### Testy (`tests/`)
-
-- Zawiera testy jednostkowe i integracyjne
-- Testuje kluczowe komponenty aplikacji (autoryzacja, faktury, raporty)
-
-## Przepływ pracy aplikacji
-
-1. **Inicjalizacja**:
-   - `run.py` wczytuje konfigurację i tworzy aplikację Flask
-   - `app/__init__.py` inicjalizuje rozszerzenia i rejestruje kontrolery
-
-2. **Autoryzacja**:
-   - Użytkownik rejestruje się lub loguje (`auth.py`)
-   - Flask-Login zarządza sesją użytkownika
-
-3. **Dashboard**:
-   - Użytkownik widzi podsumowanie i statystyki (`dashboard.py`)
-   - Może przejść do list faktur, klientów i kontaktów
-
-6. **Zarządzanie kontaktami i bilansem finansowym**:
-   - Użytkownik dodaje, edytuje, wyświetla kontakty (`contact.py`)
-   - Rejestruje transakcje finansowe (pożyczki, spłaty) (`transaction.py`)
-   - Śledzi bilans finansowy z każdym kontaktem
-   - System automatycznie oblicza salda i wyświetla je w interfejsie
-
-7. **Raporty**:
-   - Użytkownik generuje raporty i eksportuje dane (`reports.py`)
-   - Dane są przetwarzane i prezentowane w różnych formatach
-
-## Moduł bilansu finansowego
-
-Moduł bilansu finansowego pozwala śledzić pożyczki i spłaty pomiędzy użytkownikiem a jego kontaktami.
-
-### Typy transakcji
-
-System obsługuje cztery typy transakcji:
-
-1. **LENT_TO (Pożyczyłem)** - rejestruje kwotę, którą użytkownik pożyczył kontaktowi
-   - Zwiększa saldo, które kontakt jest winien użytkownikowi
-
-2. **BORROWED_FROM (Pożyczył mi)** - rejestruje kwotę, którą kontakt pożyczył użytkownikowi
-   - Zwiększa saldo, które użytkownik jest winien kontaktowi
-
-3. **REPAID_TO (Oddałem)** - rejestruje kwotę, którą użytkownik oddał kontaktowi
-   - Zmniejsza saldo, które użytkownik jest winien kontaktowi
-
-4. **RECEIVED_FROM (Oddał mi)** - rejestruje kwotę, którą kontakt oddał użytkownikowi
-   - Zmniejsza saldo, które kontakt jest winien użytkownikowi
-
-### Obliczanie salda
-
-Saldo z kontaktem jest obliczane jako:
-
-```
-Ile kontakt jest mi winien = (ile mu pożyczyłem - ile mi oddał)
-Ile ja jestem winien kontaktowi = (ile mi pożyczył - ile mu oddałem)
-
-Całkowity bilans = Ile kontakt jest mi winien - Ile ja jestem winien kontaktowi
-```
-
-- Dodatni bilans oznacza, że kontakt jest winien użytkownikowi
-- Ujemny bilans oznacza, że użytkownik jest winien kontaktowi
-- Zerowy bilans oznacza, że wszystkie pożyczki zostały rozliczone
-
-### Widżet na dashboardzie
-
-Dashboard zawiera widżet podsumowujący bilans pożyczek, który pokazuje:
-- Łączną kwotę do odzyskania (suma dodatnich sald)
-- Łączną kwotę do oddania (suma ujemnych sald)
-- Listę kontaktów z niezerowym saldem
-
-## Przepływ danych
-
-1. **Formularze → Kontrolery**:
-   - Użytkownik wprowadza dane w formularzach HTML
-   - Dane są przesyłane do odpowiednich kontrolerów
-   - WTForms waliduje dane
-
-2. **Kontrolery → Modele**:
-   - Kontrolery przetwarzają dane i tworzą/aktualizują obiekty modeli
-   - SQLAlchemy ORM mapuje obiekty do bazy danych
-
-3. **Modele → Baza danych**:
-   - Obiekty modeli są zapisywane w bazie danych
-   - Relacje są zachowywane
-
-4. **Modele → Szablony**:
-   - Kontrolery przekazują obiekty modeli do szablonów
-   - Jinja2 renderuje dane w szablonach HTML
-
-5. **Usługi → Kontrolery**:
-   - Usługi implementują złożoną logikę biznesową
-   - Kontrolery korzystają z usług do generowania faktur, numerów, itp.
+1. Użytkownik tworzy kontakt i rejestruje transakcję pożyczki lub spłaty.
+2. Metody modeli przeliczają saldo dla każdej relacji użytkownik–kontakt, uwzględniając wszystkie typy transakcji (`LENT_TO`, `BORROWED_FROM`, `REPAID_TO`, `RECEIVED_FROM`).
+3. Dashboard agreguje dane, pokazując kwoty do odzyskania oraz te wymagające spłaty, a także wyświetla listę najważniejszych kontaktów z niezerowym bilansem.
 
 ## Instalacja i uruchomienie
 
 ### Wymagania
 
 - Python 3.8+
-- pip
-- virtualenv (opcjonalnie)
-- PostgreSQL lub SQLite
+- `pip`
+- (Opcjonalnie) `virtualenv`
 
-### Kroki instalacji
+### Kroki
 
-1. Klonowanie repozytorium:
+1. **Klonowanie repozytorium**
    ```bash
    git clone https://github.com/your-username/invoicex.git
    cd invoicex
    ```
-
-2. Utworzenie i aktywacja wirtualnego środowiska:
+2. **Utworzenie i aktywacja środowiska wirtualnego**
    ```bash
    python -m venv venv
-   source venv/bin/activate  # Na Linux/Mac
+   source venv/bin/activate      # Linux/macOS
    # lub
-   venv\Scripts\activate     # Na Windows
+   venv\Scripts\activate         # Windows
    ```
-
-3. Instalacja zależności:
+3. **Instalacja zależności**
    ```bash
    pip install -r requirements.txt
    ```
-
-4. Utworzenie pliku `.env` na podstawie `.env.example`:
+4. **Konfiguracja zmiennych środowiskowych** — utwórz plik `.env` (lub ustaw zmienne w systemie) z wartościami takimi jak `SECRET_KEY`, `DATABASE_URL` (domyślnie SQLite `sqlite:///invoicex_dev.db`) czy `FLASK_ENV`.
+5. **Inicjalizacja bazy danych** — dla SQLite uruchom jednorazowo:
    ```bash
-   cp .env.example .env
+   python create_db.py
    ```
-
-5. Edycja pliku `.env` i ustawienie odpowiednich wartości.
-
-6. Utworzenie katalogu na czcionki i pobranie czcionek DejaVu:
-   ```bash
-   mkdir -p app/static/fonts
-   wget https://github.com/dejavu-fonts/dejavu-fonts/raw/master/ttf/DejaVuSans.ttf -O app/static/fonts/DejaVuSans.ttf
-   wget https://github.com/dejavu-fonts/dejavu-fonts/raw/master/ttf/DejaVuSans-Bold.ttf -O app/static/fonts/DejaVuSans-Bold.ttf
-   chmod 644 app/static/fonts/*.ttf
-   ```
-
-7. Inicjalizacja bazy danych:
+   Alternatywnie można użyć migracji Alembic:
    ```bash
    flask db upgrade
    ```
-
-8. Uruchomienie aplikacji:
+6. **Start aplikacji**
    ```bash
    python run.py
    ```
 
-Aplikacja będzie dostępna pod adresem [http://localhost:5000](http://localhost:5000).
-
-## Przewodnik po module bilansu finansowego
-
-### Dodawanie nowego kontaktu
-1. Przejdź do zakładki "Kontakty" w głównym menu
-2. Kliknij "Dodaj kontakt"
-3. Wypełnij formularz z danymi kontaktu
-4. Kliknij "Zapisz"
-
-### Rejestrowanie pożyczki
-1. Przejdź do widoku konkretnego kontaktu
-2. Kliknij "Dodaj transakcję"
-3. Wybierz typ transakcji ("Pożyczyłem" lub "Pożyczył mi")
-4. Wprowadź kwotę, datę i opis
-5. Kliknij "Zapisz"
-
-### Rejestrowanie spłaty
-1. Przejdź do widoku konkretnego kontaktu
-2. Kliknij "Dodaj transakcję"
-3. Wybierz typ transakcji ("Oddałem" lub "Oddał mi")
-4. Wprowadź kwotę, datę i opis
-5. Kliknij "Zapisz"
-
-### Przeglądanie bilansu
-1. Na dashboardzie znajdziesz widżet podsumowujący bilans pożyczek
-2. Pełny bilans i historię transakcji dla każdego kontaktu zobaczysz w widoku szczegółowym kontaktu
-
-## Rozszerzanie aplikacji
-
-### Dodawanie nowego kontrolera
-
-1. Utwórz plik w `app/routes/`
-2. Zdefiniuj blueprint i funkcje tras
-3. Zarejestruj blueprint w `app/__init__.py`
-
-### Dodawanie nowego modelu
-
-1. Utwórz plik w `app/models/`
-2. Zdefiniuj klasę modelu dziedziczącą po `db.Model`
-3. Dodaj model do `app/models/__init__.py`
-4. Utwórz migrację: `flask db migrate -m "dodano nowy model"`
-5. Zastosuj migrację: `flask db upgrade`
-
-### Dodawanie nowej usługi
-
-1. Utwórz plik w `app/services/`
-2. Zdefiniuj klasę usługi
-3. Zaimportuj i używaj w odpowiednich kontrolerach
+Domyślnie aplikacja będzie dostępna pod adresem [http://localhost:5000](http://localhost:5000).
 
 ## Licencja
 
-Ten projekt jest udostępniony na licencji MIT. Zobacz plik `LICENSE` dla szczegółów.
+Projekt jest udostępniony na licencji MIT.
