@@ -1,4 +1,6 @@
+
 # Dabtly
+
 
 Dabtly to aplikacja webowa do zarządzania kontaktami oraz ich rozliczeniami finansowymi. System pozwala ewidencjonować pożyczki, monitorować stany należności i zobowiązań, a także przechowywać dane kontrahentów w jednym, czytelnym miejscu.
 
@@ -17,26 +19,90 @@ Dabtly to aplikacja webowa do zarządzania kontaktami oraz ich rozliczeniami fin
 - **Baza danych**: SQLite domyślnie (możliwość użycia innych silników zgodnych z SQLAlchemy)
 - **Formularze**: Flask-WTF / WTForms
 
+
 ## Struktura projektu
 
 ```
 dabtly/
 ├── app/
-│   ├── __init__.py           # Tworzenie aplikacji, rejestracja rozszerzeń i blueprintów
-│   ├── config.py             # Konfiguracja środowiskowa i odczyt zmiennych
-│   ├── forms/                # Formularze kontaktów oraz transakcji
-│   ├── models/               # Modele SQLAlchemy: User, Contact, Transaction
-│   ├── routes/               # Logika widoków: auth, contact, dashboard, transaction, errors
-│   ├── static/               # Style CSS, skrypty JS, czcionki
-│   └── templates/            # Szablony Jinja2 dla każdej sekcji aplikacji
-├── create_db.py              # Inicjalizacja bazy danych (SQLite)
-├── migrations/               # Migracje Alembic
-├── requirements.txt          # Lista zależności
-├── run.py                    # Punkt wejścia aplikacji
-└── readme                    # Ten dokument
+│   ├── __init__.py               # Tworzenie aplikacji i rejestracja rozszerzeń
+│   ├── config.py                 # Konfiguracje środowiskowe (SQLite domyślnie)
+│   ├── forms/                    # Formularze WTForms wykorzystywane w trasach
+│   │   ├── contact_form.py
+│   │   └── transaction_form.py
+│   ├── models/                   # Modele SQLAlchemy
+│   │   ├── __init__.py
+│   │   ├── contact.py
+│   │   ├── transaction.py
+│   │   └── user.py
+│   ├── routes/                   # Blueprinty Flask obsługujące logikę modułów
+│   │   ├── __init__.py
+│   │   ├── auth.py
+│   │   ├── contact.py
+│   │   ├── dashboard.py
+│   │   ├── errors.py
+│   │   └── transaction.py
+│   ├── static/                   # Zasoby statyczne (Bootstrap + niestandardowe style)
+│   │   ├── css/
+│   │   ├── fonts/
+│   │   └── js/
+│   └── templates/                # Szablony Jinja2 dla widoków
+│       ├── auth/
+│       ├── contact/
+│       ├── dashboard/
+│       ├── errors/
+│       ├── transaction/
+│       └── layout.html
+├── create_db.py                  # Skrypt tworzący bazę danych (SQLite)
+├── migrations/                   # Pliki migracji Alembic
+├── requirements.txt              # Lista zależności Pythona
+├── run.py                        # Uruchomienie aplikacji z odpowiednią konfiguracją
+└── readme                        # Ten plik
 ```
 
-## Szybki start
+## Kluczowe komponenty
+
+### Modele (`app/models/`)
+
+
+- **User** — obsługa kont użytkowników, logowania i podstawowych danych profilu.
+- **Contact** — przechowuje dane kontaktowe, a dzięki metodzie `get_balance()` oblicza aktualne saldo relacji finansowych.
+- **Transaction** — zapisuje operacje finansowe między użytkownikiem a kontaktem, wykorzystując enum `TransactionType` do rozróżniania pożyczek i spłat.
+
+### Trasy (`app/routes/`)
+
+- **auth.py** — logowanie, rejestracja, profil i zmiana hasła. Formularze zwalidowane przez WTForms zabezpieczają przed duplikacją adresów e-mail.
+- **contact.py** — lista kontaktów z wyliczonym saldem, formularze dodawania i edycji oraz widok historii transakcji dla pojedynczego kontaktu.
+- **transaction.py** — dodawanie, aktualizacja i usuwanie transakcji finansowych z przypisaniem typu operacji i kwoty.
+- **dashboard.py** — prezentacja podsumowania pożyczek (kwoty do odzyskania i do zapłaty) oraz szybki dostęp do kontaktów z aktywnymi saldami.
+
+### Formularze (`app/forms/`)
+
+- **ContactForm** — umożliwia dodawanie i edycję kontaktów (imię, email, telefon, notatki).
+- **TransactionForm** — pozwala określić kwotę, typ i opis transakcji oraz opcjonalnie ustawić datę operacji.
+
+### Szablony i zasoby statyczne
+
+Szablony Jinja2 w katalogu `app/templates/` definiują widoki dla modułów uwierzytelniania, dashboardu, kontaktów i transakcji. Pliki w `app/static/` zawierają style CSS, skrypty JS i czcionki używane w interfejsie (w tym wbudowane pliki DejaVuSans wykorzystywane w szablonach).
+
+## Śledzenie sald pożyczek
+
+Połączone działanie modułów kontaktów i transakcji umożliwia dokładne monitorowanie zobowiązań finansowych:
+
+1. Użytkownik tworzy kontakt i rejestruje transakcję pożyczki lub spłaty.
+2. Metody modeli przeliczają saldo dla każdej relacji użytkownik–kontakt, uwzględniając wszystkie typy transakcji (`LENT_TO`, `BORROWED_FROM`, `REPAID_TO`, `RECEIVED_FROM`).
+3. Dashboard agreguje dane, pokazując kwoty do odzyskania oraz te wymagające spłaty, a także wyświetla listę najważniejszych kontaktów z niezerowym bilansem.
+
+
+## Instalacja i uruchomienie
+
+### Wymagania
+
+- Python 3.8+
+- `pip`
+- (Opcjonalnie) `virtualenv`
+
+### Kroki
 
 1. **Klonowanie repozytorium**
    ```bash
@@ -46,9 +112,12 @@ dabtly/
 2. **Utworzenie środowiska wirtualnego**
    ```bash
    python -m venv venv
-   source venv/bin/activate        # Linux/macOS
+
+   source venv/bin/activate      # Linux/macOS
    # lub
-   venv\Scripts\activate           # Windows
+   venv\Scripts\activate         # Windows
+
+
    ```
 3. **Instalacja zależności**
    ```bash
