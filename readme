@@ -1,137 +1,145 @@
-# InvoiceX - Zarządzanie kontaktami i rozliczeniami
 
-InvoiceX to aplikacja webowa oparta o Flask, która pomaga freelancerom i małym firmom
-śledzić kontakty oraz wzajemne rozliczenia finansowe. Projekt pierwotnie zakładał moduł
-wystawiania faktur, jednak został on usunięty. Repozytorium skupia się obecnie na
-zarządzaniu kontaktami, rejestrowaniu pożyczek oraz monitorowaniu sald.
+# InvoiceX - Zarządzanie kontaktami i saldem pożyczek
 
-## Najważniejsze funkcje
+InvoiceX to aplikacja webowa oparta na Flasku, która skupia się na czterech kluczowych modułach:
 
-- Rejestracja i logowanie użytkowników oraz zarządzanie profilem.
-- Dashboard z podsumowaniem sald kontaktów i szybkim wglądem w najważniejsze dane.
-- Zarządzanie kontaktami: dodawanie, edycja, podgląd szczegółów i historia rozliczeń.
-- Rejestrowanie transakcji (pożyczone/oddane środki) z poziomu każdego kontaktu.
-- Obsługa błędów i przyjazne komunikaty dla użytkownika.
+- **Uwierzytelnianie** — logowanie, rejestracja i zarządzanie profilem użytkownika z wykorzystaniem Flask-Login oraz bezpiecznej zmiany hasła.
+- **Kontakty** — przechowywanie podstawowych danych kontrahentów, obliczanie indywidualnych sald i kontrola możliwości usuwania kontaktów powiązanych z transakcjami.
+- **Transakcje** — rejestrowanie pożyczek i spłat między użytkownikiem a kontaktami, z wyborem typu operacji i automatycznym naliczaniem daty.
+- **Dashboard** — panel startowy prezentujący podsumowanie pożyczek, kwoty do odzyskania i do zapłaty oraz najważniejsze kontakty z aktywnym saldem.
+
+Dzięki współpracy tych modułów użytkownik może w jednym miejscu śledzić przepływy finansowe z poszczególnymi kontaktami i natychmiast sprawdzać aktualne zobowiązania.
+
 
 ## Struktura projektu
 
 ```
 invoicex/
 ├── app/
-│   ├── __init__.py              # Inicjalizacja aplikacji Flask i konfiguracja rozszerzeń
-│   ├── config.py                # Konfiguracja środowiskowa
-│   ├── forms/
-│   │   ├── contact_form.py      # Formularze związane z kontaktami
-│   │   └── transaction_form.py  # Formularze związane z transakcjami
-│   ├── models/
-│   │   ├── __init__.py          # Eksport modeli
-│   │   ├── contact.py           # Model kontaktu
-│   │   ├── transaction.py       # Model transakcji
-│   │   └── user.py              # Model użytkownika
-│   ├── routes/
-│   │   ├── __init__.py          # Rejestracja blueprintów
-│   │   ├── auth.py              # Logowanie, rejestracja, profil i zmiana hasła
-│   │   ├── contact.py           # Widoki CRUD dla kontaktów
-│   │   ├── dashboard.py         # Widoki dashboardu
-│   │   ├── errors.py            # Obsługa błędów HTTP
-│   │   └── transaction.py       # Obsługa transakcji powiązanych z kontaktami
-│   ├── static/
-│   │   ├── css/                 # Style CSS wspólne dla aplikacji
-│   │   ├── fonts/               # Wymagane czcionki (np. do generowania dokumentów PDF)
-│   │   └── js/                  # Skrypty JavaScript wykorzystywane w widokach
-│   └── templates/
-│       ├── auth/                # Szablony związane z autoryzacją
-│       ├── contact/             # Widoki listy i szczegółów kontaktów
-│       ├── dashboard/           # Widoki dashboardu
-│       ├── errors/              # Strony błędów
-│       ├── layout.html          # Główny szablon bazowy
-│       └── transaction/         # Widoki formularzy transakcji
-├── migrations/                  # Migracje bazy danych (Alembic)
-├── requirements.txt             # Lista zależności Pythona
-├── run.py                       # Skrypt uruchamiający aplikację
-└── create_db.py                 # Narzędzie pomocnicze do tworzenia bazy danych
+
+│   ├── __init__.py               # Tworzenie aplikacji i rejestracja rozszerzeń
+│   ├── config.py                 # Konfiguracje środowiskowe (SQLite domyślnie)
+│   ├── forms/                    # Formularze WTForms wykorzystywane w trasach
+│   │   ├── contact_form.py
+│   │   └── transaction_form.py
+│   ├── models/                   # Modele SQLAlchemy
+│   │   ├── __init__.py
+│   │   ├── contact.py
+│   │   ├── transaction.py
+│   │   └── user.py
+│   ├── routes/                   # Blueprinty Flask obsługujące logikę modułów
+│   │   ├── __init__.py
+│   │   ├── auth.py
+│   │   ├── contact.py
+│   │   ├── dashboard.py
+│   │   ├── errors.py
+│   │   └── transaction.py
+│   ├── static/                   # Zasoby statyczne (Bootstrap + niestandardowe style)
+│   │   ├── css/
+│   │   ├── fonts/
+│   │   └── js/
+│   └── templates/                # Szablony Jinja2 dla widoków
+│       ├── auth/
+│       ├── contact/
+│       ├── dashboard/
+│       ├── errors/
+│       ├── transaction/
+│       └── layout.html
+├── create_db.py                  # Skrypt tworzący bazę danych (SQLite)
+├── migrations/                   # Pliki migracji Alembic
+├── requirements.txt              # Lista zależności Pythona
+├── run.py                        # Uruchomienie aplikacji z odpowiednią konfiguracją
+└── readme                        # Ten plik
 ```
 
 ## Kluczowe komponenty
 
 ### Modele (`app/models/`)
 
-- **User** (`user.py`): przechowuje dane logowania oraz podstawowe informacje o użytkowniku.
-- **Contact** (`contact.py`): reprezentuje kontrahenta powiązanego z użytkownikiem.
-- **Transaction** (`transaction.py`): zapisuje operacje finansowe między użytkownikiem a kontaktem
-  (pożyczki, spłaty, inne rozliczenia).
 
-### Formularze (`app/forms/`)
-
-- **ContactForm**: umożliwia tworzenie i edycję kontaktów.
-- **TransactionForm**: pozwala na dodawanie transakcji przypisanych do kontaktu.
+- **User** — obsługa kont użytkowników, logowania i podstawowych danych profilu.
+- **Contact** — przechowuje dane kontaktowe, a dzięki metodzie `get_balance()` oblicza aktualne saldo relacji finansowych.
+- **Transaction** — zapisuje operacje finansowe między użytkownikiem a kontaktem, wykorzystując enum `TransactionType` do rozróżniania pożyczek i spłat.
 
 ### Trasy (`app/routes/`)
 
-- **auth.py**: obsługuje logowanie, rejestrację, profil i zmianę hasła.
-- **dashboard.py**: prezentuje podsumowanie sald kontaktów na stronie głównej użytkownika.
-- **contact.py**: dostarcza widoki CRUD dla kontaktów oraz widok szczegółów kontaktu.
-- **transaction.py**: umożliwia dodawanie i usuwanie transakcji powiązanych z danym kontaktem.
-- **errors.py**: definiuje strony błędów (np. 404, 500).
+- **auth.py** — logowanie, rejestracja, profil i zmiana hasła. Formularze zwalidowane przez WTForms zabezpieczają przed duplikacją adresów e-mail.
+- **contact.py** — lista kontaktów z wyliczonym saldem, formularze dodawania i edycji oraz widok historii transakcji dla pojedynczego kontaktu.
+- **transaction.py** — dodawanie, aktualizacja i usuwanie transakcji finansowych z przypisaniem typu operacji i kwoty.
+- **dashboard.py** — prezentacja podsumowania pożyczek (kwoty do odzyskania i do zapłaty) oraz szybki dostęp do kontaktów z aktywnymi saldami.
+
+### Formularze (`app/forms/`)
+
+- **ContactForm** — umożliwia dodawanie i edycję kontaktów (imię, email, telefon, notatki).
+- **TransactionForm** — pozwala określić kwotę, typ i opis transakcji oraz opcjonalnie ustawić datę operacji.
+
+### Szablony i zasoby statyczne
+
+Szablony Jinja2 w katalogu `app/templates/` definiują widoki dla modułów uwierzytelniania, dashboardu, kontaktów i transakcji. Pliki w `app/static/` zawierają style CSS, skrypty JS i czcionki używane w interfejsie (w tym wbudowane pliki DejaVuSans wykorzystywane w szablonach).
+
+## Śledzenie sald pożyczek
+
+Połączone działanie modułów kontaktów i transakcji umożliwia dokładne monitorowanie zobowiązań finansowych:
+
+1. Użytkownik tworzy kontakt i rejestruje transakcję pożyczki lub spłaty.
+2. Metody modeli przeliczają saldo dla każdej relacji użytkownik–kontakt, uwzględniając wszystkie typy transakcji (`LENT_TO`, `BORROWED_FROM`, `REPAID_TO`, `RECEIVED_FROM`).
+3. Dashboard agreguje dane, pokazując kwoty do odzyskania oraz te wymagające spłaty, a także wyświetla listę najważniejszych kontaktów z niezerowym bilansem.
+
 
 ## Instalacja i uruchomienie
 
 ### Wymagania
 
 - Python 3.8+
-- pip
-- virtualenv (opcjonalnie)
-- PostgreSQL lub SQLite
+- `pip`
+- (Opcjonalnie) `virtualenv`
 
-### Kroki instalacji
+### Kroki
 
-1. Klonowanie repozytorium:
+1. **Klonowanie repozytorium**
    ```bash
    git clone https://github.com/your-username/invoicex.git
    cd invoicex
    ```
-
-2. Utworzenie i aktywacja wirtualnego środowiska:
+2. **Utworzenie i aktywacja środowiska wirtualnego**
    ```bash
    python -m venv venv
-   source venv/bin/activate  # Linux/Mac
-   # lub
-   venv\Scripts\activate     # Windows
-   ```
 
-3. Instalacja zależności:
+   source venv/bin/activate      # Linux/macOS
+   # lub
+   venv\Scripts\activate         # Windows
+
+   ```
+3. **Instalacja zależności**
    ```bash
    pip install -r requirements.txt
    ```
-
-4. Utworzenie pliku `.env` na podstawie `.env.example`:
+4. **Konfiguracja zmiennych środowiskowych** — utwórz plik `.env` (lub ustaw zmienne w systemie) z wartościami takimi jak `SECRET_KEY`, `DATABASE_URL` (domyślnie SQLite `sqlite:///invoicex_dev.db`) czy `FLASK_ENV`.
+5. **Inicjalizacja bazy danych** — dla SQLite uruchom jednorazowo:
    ```bash
-   cp .env.example .env
+   python create_db.py
    ```
-
-5. Uzupełnienie pliku `.env` odpowiednimi wartościami konfiguracyjnymi.
-
-6. (Opcjonalnie) Upewnij się, że wymagane czcionki znajdują się w `app/static/fonts/`.
-
-7. Inicjalizacja bazy danych:
+   
    ```bash
    flask db upgrade
    ```
-
-8. Uruchomienie aplikacji:
+6. **Start aplikacji**
    ```bash
    python run.py
    ```
 
+
 Aplikacja będzie dostępna pod adresem [http://localhost:5000](http://localhost:5000).
 
-## Aktualny zakres projektu
 
-Moduł faktur został usunięty i w repozytorium nie znajdują się już szablony, style ani skrypty
-powiązane z wystawianiem faktur. Dokumentacja i kod odzwierciedlają obecny stan – aplikacja
-koncentruje się na zarządzaniu kontaktami i rozliczeniami między użytkownikiem a jego
-kontrahentami.
 
 ## Licencja
 
 Projekt udostępniany jest na licencji MIT. Szczegóły znajdują się w pliku `LICENSE`.
+=======
+Domyślnie aplikacja będzie dostępna pod adresem [http://localhost:5000](http://localhost:5000).
+
+## Licencja
+
+Projekt jest udostępniony na licencji MIT.
+

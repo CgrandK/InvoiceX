@@ -127,6 +127,6 @@ def change_password():
         current_user.set_password(form.new_password.data)
         db.session.commit()
         flash('Hasło zostało zmienione pomyślnie', 'success')
-        return redirect(url_for('auth.profile'))
+        return redirect(url_for('dashboard.index'))
     
     return render_template('auth/change_password.html', title='Zmiana hasła', form=form)
