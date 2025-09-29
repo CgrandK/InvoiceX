@@ -41,10 +41,11 @@ def new(contact_id):
         return redirect(url_for('contact.view', id=contact.id))
     
     return render_template(
-        'transaction/form.html', 
-        form=form, 
-        contact=contact, 
-        title='Nowa transakcja'
+        'transaction/form.html',
+        form=form,
+        contact=contact,
+        title='Nowa transakcja',
+        TransactionType=TransactionType
     )
 
 @transaction_bp.route('/<int:id>/edit', methods=['GET', 'POST'])
@@ -74,10 +75,11 @@ def edit(id):
         return redirect(url_for('contact.view', id=transaction.contact_id))
     
     return render_template(
-        'transaction/form.html', 
-        form=form, 
-        contact=transaction.contact, 
-        title='Edytuj transakcję'
+        'transaction/form.html',
+        form=form,
+        contact=transaction.contact,
+        title='Edytuj transakcję',
+        TransactionType=TransactionType
     )
 
 @transaction_bp.route('/<int:id>/delete', methods=['POST'])
