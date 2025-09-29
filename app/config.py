@@ -7,7 +7,7 @@ class Config:
     DEBUG = os.environ.get('FLASK_DEBUG', 'False') == 'True'
     
     # Konfiguracja bazy danych
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///invoicex.db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///dabtly.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Konfiguracja JWT
@@ -21,7 +21,7 @@ class Config:
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'True') == 'True'
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@invoicex.com')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@dabtly.com')
     
     # Ustawienia upload-u plików
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB
@@ -30,7 +30,7 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///invoicex_dev.db'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///dabtly_dev.db'
 
 class TestingConfig(Config):
     TESTING = True

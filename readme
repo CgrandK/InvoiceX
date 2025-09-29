@@ -1,22 +1,30 @@
 
-# InvoiceX - Zarządzanie kontaktami i saldem pożyczek
+# Dabtly
 
-InvoiceX to aplikacja webowa oparta na Flasku, która skupia się na czterech kluczowych modułach:
 
-- **Uwierzytelnianie** — logowanie, rejestracja i zarządzanie profilem użytkownika z wykorzystaniem Flask-Login oraz bezpiecznej zmiany hasła.
-- **Kontakty** — przechowywanie podstawowych danych kontrahentów, obliczanie indywidualnych sald i kontrola możliwości usuwania kontaktów powiązanych z transakcjami.
-- **Transakcje** — rejestrowanie pożyczek i spłat między użytkownikiem a kontaktami, z wyborem typu operacji i automatycznym naliczaniem daty.
-- **Dashboard** — panel startowy prezentujący podsumowanie pożyczek, kwoty do odzyskania i do zapłaty oraz najważniejsze kontakty z aktywnym saldem.
+Dabtly to aplikacja webowa do zarządzania kontaktami oraz ich rozliczeniami finansowymi. System pozwala ewidencjonować pożyczki, monitorować stany należności i zobowiązań, a także przechowywać dane kontrahentów w jednym, czytelnym miejscu.
 
-Dzięki współpracy tych modułów użytkownik może w jednym miejscu śledzić przepływy finansowe z poszczególnymi kontaktami i natychmiast sprawdzać aktualne zobowiązania.
+## Najważniejsze funkcje
+
+- **Panel główny** – szybki podgląd aktualnych należności, zobowiązań oraz ostatnich operacji.
+- **Kontakty** – baza kontrahentów z wyliczanym automatycznie saldem relacji finansowych.
+- **Transakcje** – rejestrowanie pożyczek i spłat z rozróżnieniem kierunku przepływu środków.
+- **Uwierzytelnianie** – rejestracja użytkowników, logowanie i zarządzanie profilem dzięki Flask-Login.
+- **Powiadomienia** – spójny system komunikatów flash informujący o wyniku wykonywanych akcji.
+
+## Stos technologiczny
+
+- **Backend**: Python 3.8+, Flask, SQLAlchemy, Alembic
+- **Frontend**: Bootstrap 5, własne style CSS i skrypty JS
+- **Baza danych**: SQLite domyślnie (możliwość użycia innych silników zgodnych z SQLAlchemy)
+- **Formularze**: Flask-WTF / WTForms
 
 
 ## Struktura projektu
 
 ```
-invoicex/
+dabtly/
 ├── app/
-
 │   ├── __init__.py               # Tworzenie aplikacji i rejestracja rozszerzeń
 │   ├── config.py                 # Konfiguracje środowiskowe (SQLite domyślnie)
 │   ├── forms/                    # Formularze WTForms wykorzystywane w trasach
@@ -98,10 +106,10 @@ Połączone działanie modułów kontaktów i transakcji umożliwia dokładne mo
 
 1. **Klonowanie repozytorium**
    ```bash
-   git clone https://github.com/your-username/invoicex.git
-   cd invoicex
+   git clone https://github.com/your-username/dabtly.git
+   cd dabtly
    ```
-2. **Utworzenie i aktywacja środowiska wirtualnego**
+2. **Utworzenie środowiska wirtualnego**
    ```bash
    python -m venv venv
 
@@ -109,37 +117,43 @@ Połączone działanie modułów kontaktów i transakcji umożliwia dokładne mo
    # lub
    venv\Scripts\activate         # Windows
 
+
    ```
 3. **Instalacja zależności**
    ```bash
    pip install -r requirements.txt
    ```
-4. **Konfiguracja zmiennych środowiskowych** — utwórz plik `.env` (lub ustaw zmienne w systemie) z wartościami takimi jak `SECRET_KEY`, `DATABASE_URL` (domyślnie SQLite `sqlite:///invoicex_dev.db`) czy `FLASK_ENV`.
-5. **Inicjalizacja bazy danych** — dla SQLite uruchom jednorazowo:
+4. **Konfiguracja zmiennych środowiskowych**
+   Utwórz plik `.env` (albo ustaw zmienne w systemie) z wartościami:
+   - `SECRET_KEY`
+   - `DATABASE_URL` (np. `sqlite:///dabtly_dev.db`)
+   - `FLASK_ENV` (`development`, `testing` lub `production`)
+5. **Przygotowanie bazy danych**
    ```bash
    python create_db.py
-   ```
-   
-   ```bash
+   # lub przy użyciu migracji Alembic
    flask db upgrade
    ```
-6. **Start aplikacji**
+6. **Uruchomienie aplikacji**
    ```bash
    python run.py
    ```
+   Aplikacja będzie dostępna pod adresem [http://localhost:5000](http://localhost:5000).
 
+## Testy
 
-Aplikacja będzie dostępna pod adresem [http://localhost:5000](http://localhost:5000).
+W projekcie znajduje się zestaw testów jednostkowych i funkcjonalnych. Można je uruchomić poleceniem:
 
+```bash
+pytest
+```
 
+## Dalszy rozwój
+
+- Rozbudowa raportowania o dodatkowe wizualizacje sald.
+- Integracja z zewnętrznymi usługami płatności.
+- Powiadomienia e-mail lub push dla kluczowych kontaktów.
 
 ## Licencja
 
-Projekt udostępniany jest na licencji MIT. Szczegóły znajdują się w pliku `LICENSE`.
-=======
-Domyślnie aplikacja będzie dostępna pod adresem [http://localhost:5000](http://localhost:5000).
-
-## Licencja
-
-Projekt jest udostępniony na licencji MIT.
-
+Projekt udostępniany jest na licencji MIT.
