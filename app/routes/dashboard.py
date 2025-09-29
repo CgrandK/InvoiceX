@@ -12,7 +12,7 @@ dashboard_bp = Blueprint('dashboard', __name__)
 @login_required
 def index():
     """
-    Dashboard główny - pokazuje podsumowanie faktur i statystyki.
+    Dashboard główny - pokazuje podsumowanie sald kontaktów i statystyki.
     """
 
 
