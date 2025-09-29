@@ -1,5 +1,5 @@
 /**
- * InvoiceX - Main JavaScript file
+ * Dabtly - Main JavaScript file
  * 
  * Contains common functionality used across the application
  * app/static/js/main.js 

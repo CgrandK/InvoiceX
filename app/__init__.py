@@ -50,7 +50,7 @@ def create_app(config_class='app.config.Config'):
     @app.context_processor
     def utility_processor():
         return {
-            'app_name': 'InvoiceX',
+            'app_name': 'Dabtly',
             'current_year': 2025
         }
 
