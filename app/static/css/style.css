@@ -38,37 +38,11 @@ main {
     position: relative;
 }
 
-/* Invoice styles */
-.invoice-details {
-    background-color: #f8f9fc;
-    padding: 1.5rem;
-    border-radius: 0.35rem;
-}
-
-.invoice-status {
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.invoice-total {
-    font-size: 1.5rem;
-    font-weight: 700;
-}
-
 /* Forms */
 .form-group.required .form-label:after {
     content: "*";
     color: red;
     margin-left: 0.25rem;
-}
-
-/* Invoice items table */
-.invoice-items-table th {
-    background-color: #f8f9fc;
-}
-
-.invoice-items-table tfoot {
-    font-weight: 600;
 }
 
 /* Dashboard cards */
@@ -93,45 +67,6 @@ main {
     transition: box-shadow 0.3s ease-in-out;
 }
 
-/* Status badges */
-.status-paid {
-    background-color: #1cc88a !important;
-}
-
-.status-pending {
-    background-color: #f6c23e !important;
-}
-
-.status-overdue {
-    background-color: #e74a3b !important;
-}
-
-.status-draft {
-    background-color: #858796 !important;
-}
-
-.status-canceled {
-    background-color: #5a5c69 !important;
-}
-
-/* Invoice form: dynamic items */
-.invoice-item {
-    background-color: #f8f9fc;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    border-radius: 0.35rem;
-    border: 1px solid #e3e6f0;
-}
-
-.remove-item-btn {
-    color: #e74a3b;
-    cursor: pointer;
-}
-
-.add-item-btn {
-    cursor: pointer;
-}
-
 /* Reports section */
 .report-card {
     height: 100%;
@@ -145,21 +80,4 @@ main {
 .report-icon {
     font-size: 2rem;
     color: #4e73df;
-}
-
-/* Print styles for invoices */
-@media print {
-    .no-print {
-        display: none !important;
-    }
-
-    .invoice-container {
-        padding: 0;
-        margin: 0;
-    }
-
-    .invoice-print {
-        border: none !important;
-        box-shadow: none !important;
-    }
 }
